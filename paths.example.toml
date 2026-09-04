@@ -1,0 +1,8 @@
+# Copy to paths.toml (gitignored) and edit.
+#
+# Where raw data, caches and results live. May be inside the repository (the
+# default after migration) or anywhere else on the same volume.
+#
+# The SPSHEAF_DATA environment variable overrides this file.
+
+data_root = "./data"

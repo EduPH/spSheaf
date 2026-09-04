@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spsheaf"
+version = "0.2.0"
+description = "spSheaf: sheaf-theoretic boundary detection for segmentation-free spatial domain inference"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Eduardo Paluzo-Hidalgo"},
+    {name = "Yusuke Imoto"},
+]
+keywords = [
+    "spatial transcriptomics",
+    "sheaf theory",
+    "domain inference",
+    "computational topology",
+    "MERFISH",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+dependencies = [
+    "numpy>=1.21",
+    "pandas>=1.3",
+    "scipy>=1.7",
+    "scikit-learn>=1.0",
+    "matplotlib>=3.4",
+    "pyarrow>=10",          # parquet caches in experiments/
+    "anndata>=0.9",         # spsheaf.pipeline and the osmFISH loader
+    "h5py>=3.0",            # osmFISH raw molecule HDF5
+    "tomli>=2.0; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "flake8>=5.0",
+]
+# Figure assembly and specification checking (figures/). Kept out of the core
+# so a plotting dependency can never block the pipeline.
+figures = [
+    "pypdf>=3.9",           # compose panels at scale 1.0
+    "pdfminer.six>=20221105",  # placed raster dpi, for verify_figure.py
+    "pillow>=9.0",          # layout.raster_panel, placing a legacy raster
+    "pytest>=7.0",          # figures/test_figstyle.py
+]
+# Comparators for benchmarks/segfree/. Deliberately separate: these are heavy
+# and prone to dependency conflicts, and a broken install here must never be
+# able to stop the core pipeline from running.
+# FICTURE (external CLI) and R's sctransform are NOT pip-installable; see
+# benchmarks/segfree/README.md.
+benchmark = [
+    "ssam>=1.0",
+    "points2regions>=0.1",
+]
+
+[project.urls]
+Repository = "https://github.com/EduPH/spSheaf"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["spsheaf*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

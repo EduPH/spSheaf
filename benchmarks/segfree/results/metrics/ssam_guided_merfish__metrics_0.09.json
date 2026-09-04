@@ -1,0 +1,466 @@
+{
+ "slice": "0.09",
+ "n_celltypes_given": 15,
+ "celltype_classes": [
+  "Astrocyte",
+  "Endothelial 1",
+  "Endothelial 2",
+  "Endothelial 3",
+  "Ependymal",
+  "Excitatory",
+  "Inhibitory",
+  "Microglia",
+  "OD Immature 1",
+  "OD Immature 2",
+  "OD Mature 1",
+  "OD Mature 2",
+  "OD Mature 3",
+  "OD Mature 4",
+  "Pericytes"
+ ],
+ "map_s": 104.61230731010437,
+ "sweep": [
+  {
+   "ARI": 0.06984320877355922,
+   "NMI": 0.1851783200878216,
+   "HOM": 0.14811260753573213,
+   "COM": 0.24698794010704891,
+   "CHAOS": 0.0294195314128352,
+   "PAS": 0.04858736728450603,
+   "ASW": -0.126345587259242,
+   "n_pred_domains": 4,
+   "find_domains_s": 25.69209933280945,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 0.9721002578735352,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.07073932650135782,
+   "NMI": 0.18983705729149636,
+   "HOM": 0.15266259880196975,
+   "COM": 0.2509436764383998,
+   "CHAOS": 0.0294195314128352,
+   "PAS": 0.04858736728450603,
+   "ASW": -0.22901926406777698,
+   "n_pred_domains": 5,
+   "find_domains_s": 27.01303267478943,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 1.0259876251220703,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.07073932650135782,
+   "NMI": 0.18983705729149636,
+   "HOM": 0.15266259880196975,
+   "COM": 0.2509436764383998,
+   "CHAOS": 0.0294195314128352,
+   "PAS": 0.04858736728450603,
+   "ASW": -0.22901926406777698,
+   "n_pred_domains": 5,
+   "find_domains_s": 25.866198539733887,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03187624924760392,
+   "NMI": 0.08230132754373018,
+   "HOM": 0.04703499263996821,
+   "COM": 0.3289281090544177,
+   "CHAOS": 0.028400452017240684,
+   "PAS": 0.004138923879791255,
+   "ASW": -0.15326800461476034,
+   "n_pred_domains": 2,
+   "find_domains_s": 0.9508705139160156,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06889477151629866,
+   "NMI": 0.2137414641560644,
+   "HOM": 0.1801368653792185,
+   "COM": 0.26275931061053154,
+   "CHAOS": 0.029757916938523667,
+   "PAS": 0.05938456001439626,
+   "ASW": -0.4419250423584778,
+   "n_pred_domains": 10,
+   "find_domains_s": 26.744525909423828,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03187624924760392,
+   "NMI": 0.08230132754373018,
+   "HOM": 0.04703499263996821,
+   "COM": 0.3289281090544177,
+   "CHAOS": 0.028400452017240684,
+   "PAS": 0.004138923879791255,
+   "ASW": -0.15326800461476034,
+   "n_pred_domains": 2,
+   "find_domains_s": 0.9325623512268066,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06955217787453744,
+   "NMI": 0.18689320339970045,
+   "HOM": 0.15024511282262296,
+   "COM": 0.24718773323013327,
+   "CHAOS": 0.029238152596348765,
+   "PAS": 0.04858736728450603,
+   "ASW": -0.12516208381106947,
+   "n_pred_domains": 4,
+   "find_domains_s": 29.582294464111328,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 1.149449348449707,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.07049605553999305,
+   "NMI": 0.19157052841613517,
+   "HOM": 0.15484092453284262,
+   "COM": 0.2511440695952676,
+   "CHAOS": 0.029238152596348776,
+   "PAS": 0.04858736728450603,
+   "ASW": -0.22702693422340334,
+   "n_pred_domains": 5,
+   "find_domains_s": 29.706367015838623,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 1.2067010402679443,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06849144445116141,
+   "NMI": 0.1900452987920061,
+   "HOM": 0.1566552596444375,
+   "COM": 0.24152470182960206,
+   "CHAOS": 0.029282976784672142,
+   "PAS": 0.05164657189130826,
+   "ASW": -0.2501909733946367,
+   "n_pred_domains": 6,
+   "find_domains_s": 29.732324838638306,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03187624924760392,
+   "NMI": 0.08230132754373018,
+   "HOM": 0.04703499263996821,
+   "COM": 0.3289281090544177,
+   "CHAOS": 0.028400452017240684,
+   "PAS": 0.004138923879791255,
+   "ASW": -0.15326800461476034,
+   "n_pred_domains": 2,
+   "find_domains_s": 1.180042028427124,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06198638343099564,
+   "NMI": 0.2037003762414316,
+   "HOM": 0.17919290835674018,
+   "COM": 0.2359734874896653,
+   "CHAOS": 0.030184106755324024,
+   "PAS": 0.07342091056325356,
+   "ASW": -0.5206359258104682,
+   "n_pred_domains": 15,
+   "find_domains_s": 29.468310594558716,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03187624924760392,
+   "NMI": 0.08230132754373018,
+   "HOM": 0.04703499263996821,
+   "COM": 0.3289281090544177,
+   "CHAOS": 0.028400452017240684,
+   "PAS": 0.004138923879791255,
+   "ASW": -0.15326800461476034,
+   "n_pred_domains": 2,
+   "find_domains_s": 1.2499442100524902,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06619140771522278,
+   "NMI": 0.16747101943966675,
+   "HOM": 0.09880384583551244,
+   "COM": 0.5490579935171314,
+   "CHAOS": 0.02846387092067076,
+   "PAS": 0.008097894547417672,
+   "ASW": -0.13254984592281266,
+   "n_pred_domains": 2,
+   "find_domains_s": 44.138938903808594,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 1.4335243701934814,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06978243718763655,
+   "NMI": 0.1951302569675976,
+   "HOM": 0.15973905533400962,
+   "COM": 0.2506671565894578,
+   "CHAOS": 0.0294792425260121,
+   "PAS": 0.06046427928738528,
+   "ASW": -0.3711113433532455,
+   "n_pred_domains": 6,
+   "find_domains_s": 44.764307260513306,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.0,
+   "NMI": 0.0,
+   "HOM": 0.0,
+   "COM": 1.0,
+   "CHAOS": 0.028303062588052742,
+   "PAS": 0.0,
+   "ASW": NaN,
+   "n_pred_domains": 1,
+   "find_domains_s": 1.4980616569519043,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06572172082861463,
+   "NMI": 0.20397007156800723,
+   "HOM": 0.17708973919518742,
+   "COM": 0.240471003392734,
+   "CHAOS": 0.02995971556108954,
+   "PAS": 0.07396077019974806,
+   "ASW": -0.36713120601166144,
+   "n_pred_domains": 9,
+   "find_domains_s": 44.53201603889465,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03538910999080048,
+   "NMI": 0.0891277115327753,
+   "HOM": 0.0513078806194502,
+   "COM": 0.33903745039816935,
+   "CHAOS": 0.028398633226458074,
+   "PAS": 0.003958970667626417,
+   "ASW": -0.1409571795533548,
+   "n_pred_domains": 2,
+   "find_domains_s": 1.4947502613067627,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.06445549862484881,
+   "NMI": 0.2081576944386055,
+   "HOM": 0.18348034855007642,
+   "COM": 0.24050456029710623,
+   "CHAOS": 0.03009430125098521,
+   "PAS": 0.0770199748065503,
+   "ASW": -0.45756422433782606,
+   "n_pred_domains": 13,
+   "find_domains_s": 45.300236225128174,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.03538910999080048,
+   "NMI": 0.0891277115327753,
+   "HOM": 0.0513078806194502,
+   "COM": 0.33903745039816935,
+   "CHAOS": 0.028398633226458074,
+   "PAS": 0.003958970667626417,
+   "ASW": -0.1409571795533548,
+   "n_pred_domains": 2,
+   "find_domains_s": 1.4461936950683594,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  }
+ ],
+ "published": {
+  "ARI": 0.03538910999080048,
+  "NMI": 0.0891277115327753,
+  "HOM": 0.0513078806194502,
+  "COM": 0.33903745039816935,
+  "CHAOS": 0.028398633226458074,
+  "PAS": 0.003958970667626417,
+  "ASW": -0.1409571795533548,
+  "n_pred_domains": 2,
+  "find_domains_s": 1.5520944595336914,
+  "params": {
+   "n_clusters": 20,
+   "merge_remote": true,
+   "merge_thres": 0.8,
+   "norm_thres": 4000
+  }
+ },
+ "best_sweep": {
+  "ARI": 0.07073932650135782,
+  "NMI": 0.18983705729149636,
+  "HOM": 0.15266259880196975,
+  "COM": 0.2509436764383998,
+  "CHAOS": 0.0294195314128352,
+  "PAS": 0.04858736728450603,
+  "ASW": -0.22901926406777698,
+  "n_pred_domains": 5,
+  "find_domains_s": 26.174842357635498,
+  "params": {
+   "n_clusters": 8,
+   "merge_remote": true,
+   "merge_thres": 0.7,
+   "norm_thres": 1000
+  }
+ }
+}

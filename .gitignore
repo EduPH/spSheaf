@@ -1,0 +1,36 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# --- caches and test artefacts ---
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- local configuration ---
+# paths.example.toml is tracked; the real one is per-machine
+paths.toml
+
+# --- data: see data/README.md, which is the only tracked file there ---
+data/*
+!data/.gitignore
+!data/README.md
+
+# --- generated figure output ---
+figures/out/
+figures/panels/
+figures/panels_export/
+figures/*.zip
+
+# --- OS ---
+.DS_Store
+Thumbs.db

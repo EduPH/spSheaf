@@ -1,0 +1,6 @@
+# Built artefacts: figures are reproducible from `make figures`.
+panels/
+*.png
+fig*.pdf
+__pycache__/
+.pytest_cache/

@@ -1,0 +1,42 @@
+dataset,unit,method,setting,ARI,NMI,HOM,COM,n_pred_domains,params
+MERFISH,slice 0.04,Sheaf boundary (paper Table 1),published,0.528,0.617,0.623,0.611,,
+MERFISH,slice 0.09,Sheaf boundary (paper Table 1),published,0.513,0.626,0.645,0.608,,
+MERFISH,slice 0.14,Sheaf boundary (paper Table 1),published,0.442,0.554,0.573,0.536,,
+MERFISH,slice 0.19,Sheaf boundary (paper Table 1),published,0.65,0.682,0.693,0.672,,
+MERFISH,slice 0.24,Sheaf boundary (paper Table 1),published,0.654,0.674,0.681,0.668,,
+MERFISH,slice 0.04,Points2Regions,best_grid,0.3957349545959777,0.5362930035911521,0.5478058262123503,0.5252541329291228,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 45.0}"
+MERFISH,slice 0.09,Points2Regions,best_grid,0.3694421258018636,0.5388782905221932,0.5469811154189571,0.531012027221033,8.0,"{""pixel_width"": 40.0, ""pixel_smoothing"": 15.0}"
+MERFISH,slice 0.14,Points2Regions,best_grid,0.3658214099875786,0.5256886958602168,0.5284897112549118,0.5229172149062633,8.0,"{""pixel_width"": 25.0, ""pixel_smoothing"": 9.0}"
+MERFISH,slice 0.19,Points2Regions,best_grid,0.424023212610851,0.5331106883926502,0.5054911048097769,0.5639229351220227,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 15.0}"
+MERFISH,slice 0.24,Points2Regions,best_grid,0.3786382203207204,0.4929327275910052,0.478155838820437,0.5086520693655963,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 45.0}"
+MERFISH,slice 0.04,Points2Regions,best_grid_seedmean,0.3642212059272184,0.5251491359854847,0.5419603606475412,0.5094150462893593,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 45.0}"
+MERFISH,slice 0.09,Points2Regions,best_grid_seedmean,0.3204307002302125,0.4991152623622102,0.5053302182309932,0.4931475320020757,8.0,"{""pixel_width"": 40.0, ""pixel_smoothing"": 15.0}"
+MERFISH,slice 0.14,Points2Regions,best_grid_seedmean,0.299192388657601,0.5000817806779112,0.4863873294250173,0.5155538357025055,8.0,"{""pixel_width"": 25.0, ""pixel_smoothing"": 9.0}"
+MERFISH,slice 0.19,Points2Regions,best_grid_seedmean,0.3148938484004489,0.4818451183960223,0.4395979214805935,0.536952407480195,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 15.0}"
+MERFISH,slice 0.24,Points2Regions,best_grid_seedmean,0.2974736621477012,0.4758337087694501,0.4651012378331618,0.4871852401923384,8.0,"{""pixel_width"": 10.0, ""pixel_smoothing"": 45.0}"
+MERFISH,slice 0.04,SSAM (de novo),published,0.1555120145210558,0.3403955161740554,0.3305026629332565,0.3508988843915349,10.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.09,SSAM (de novo),published,0.1351289694428744,0.33712983029372,0.3316422657430847,0.3428020517852936,10.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.14,SSAM (de novo),published,0.2568197879353929,0.430904439826989,0.3844162242992786,0.4901832742253109,8.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.19,SSAM (de novo),published,0.1539145271303416,0.3389325628847089,0.3141672510755012,0.3679364134581159,9.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.24,SSAM (de novo),published,0.1437531675385521,0.3593601286409656,0.3470995037822438,0.3725186356238277,11.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.04,SSAM (de novo),best_sweep,0.1684350303276475,0.3705073721826621,0.396516751686623,0.3477001038488429,16.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.9, ""norm_thres"": 4000}"
+MERFISH,slice 0.09,SSAM (de novo),best_sweep,0.2393593966729749,0.4198751405112916,0.4026590996971548,0.4386291104928284,8.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.14,SSAM (de novo),best_sweep,0.301687727226383,0.4555957594769798,0.4067856761165274,0.5177163829181783,7.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 4000}"
+MERFISH,slice 0.19,SSAM (de novo),best_sweep,0.2201301094017953,0.325002665657786,0.2651668551406995,0.4197121527472553,4.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.6, ""norm_thres"": 4000}"
+MERFISH,slice 0.24,SSAM (de novo),best_sweep,0.1634295326761761,0.2800586717149871,0.2444122654934069,0.3278782012714459,10.0,"{""n_clusters"": 12, ""merge_remote"": true, ""merge_thres"": 0.7, ""norm_thres"": 1000}"
+MERFISH,slice 0.04,"SSAM (guided, GT cell types)",best_sweep,0.0744606546101714,0.1998215548385527,0.1920155647521307,0.2082891118531857,14.0,"{""n_clusters"": 20, ""merge_remote"": true, ""merge_thres"": 0.9, ""norm_thres"": 1000}"
+MERFISH,slice 0.09,"SSAM (guided, GT cell types)",best_sweep,0.0707393265013578,0.1898370572914963,0.1526625988019697,0.2509436764383998,5.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.7, ""norm_thres"": 1000}"
+MERFISH,slice 0.14,"SSAM (guided, GT cell types)",best_sweep,0.1580274908852744,0.2798036344908518,0.2596730302711171,0.3033176996943595,11.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.9, ""norm_thres"": 1000}"
+MERFISH,slice 0.19,"SSAM (guided, GT cell types)",best_sweep,0.1233630384676284,0.2700768287732131,0.2172614209605176,0.3568178666334287,7.0,"{""n_clusters"": 12, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 1000}"
+MERFISH,slice 0.24,"SSAM (guided, GT cell types)",best_sweep,0.1245226986191177,0.2017305613214519,0.1756798129777314,0.2368522945159807,7.0,"{""n_clusters"": 8, ""merge_remote"": true, ""merge_thres"": 0.8, ""norm_thres"": 1000}"
+osmFISH,whole section,SSAM (de novo),published,0.5509654781091693,0.7081298597408181,0.653519591032415,0.7726991701179384,11.0,"{""n_clusters"": 15, ""merge_remote"": false, ""merge_thres"": 0.6, ""norm_thres"": 4500}"
+osmFISH,whole section,SSAM (de novo),best_sweep,0.566090276875457,0.7212440567789936,0.6757859717608652,0.7732588483524797,11.0,"{""n_clusters"": 20, ""merge_remote"": false, ""merge_thres"": 0.6, ""norm_thres"": 1500}"
+osmFISH,whole section,Points2Regions,best_grid,0.4321777840969371,0.6347844838427326,0.6158014363099182,0.6549751218265429,11.0,"{""pixel_width"": 40.0, ""pixel_smoothing"": 6.0}"
+osmFISH,whole section,Points2Regions,best_grid_seedmean,0.4019456396111751,0.6161010714427597,0.5971743679671213,0.6366313203432383,10.6,
+osmFISH,whole section,"Sheaf boundary (draft, preliminary)",draft,0.538,0.639,,,11.0,
+MERFISH,slice 0.04,FICTURE,best_aggregation,0.2531864796154256,0.37551912701638057,0.36847237820713463,0.38284341192628657,8.0,"{""strategy"": ""spatial"", ""model"": ""nF20.d_12"", ""n_factors"": 20}"
+MERFISH,slice 0.09,FICTURE,best_aggregation,0.2689429197650814,0.38124242174719114,0.39029211646792705,0.3726650924928328,8.0,"{""strategy"": ""kmeans"", ""model"": ""nF20.d_18"", ""n_factors"": 20}"
+MERFISH,slice 0.14,FICTURE,best_aggregation,0.2826508421356747,0.41514130272648064,0.42012637937619424,0.41038609338810084,8.0,"{""strategy"": ""spatial"", ""model"": ""nF20.d_12"", ""n_factors"": 20}"
+MERFISH,slice 0.19,FICTURE,best_aggregation,0.28302589183788696,0.4119587363051968,0.4108568042270623,0.4130715439978543,8.0,"{""strategy"": ""spatial"", ""model"": ""nF20.d_18"", ""n_factors"": 20}"
+MERFISH,slice 0.24,FICTURE,best_aggregation,0.28202149201872967,0.3895706674755581,0.38773567467655046,0.3914446309207199,8.0,"{""strategy"": ""spatial"", ""model"": ""nF20.d_12"", ""n_factors"": 20}"
+osmFISH,whole section,FICTURE,best_aggregation,0.46268929584394325,0.5185458599264743,0.5144041570176995,0.5228055904314438,11.0,"{""strategy"": ""spatial"", ""model"": ""nF20.d_18"", ""n_factors"": 20}"
