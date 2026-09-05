@@ -16,10 +16,15 @@ imaging, and on multiplexed protein panels.
 ## Install
 
 ```bash
-pip install -e .                  # or: make install
-pip install -e ".[benchmark]"     # adds ssam, points2regions, anndata
-pip install -e ".[figures]"       # adds what the figure checks need
+pip install -r requirements.txt        # runtime + the figure checks
+pip install -r requirements-lock.txt   # or: the exact versions we ran on
+pip install -e ".[benchmark]"          # optional: ssam, points2regions
 ```
+
+`requirements.txt` is generated from `pyproject.toml`, which is the source of
+truth; `make requirements` regenerates it and a test fails if it goes stale.
+`requirements-lock.txt` pins every version the published results were produced
+on, for exact reproduction.
 
 Python ≥ 3.9. `make test` runs the suite.
 
@@ -98,15 +103,45 @@ interchangeable** — `experiments/README.md` explains which is which.
 
 ## Reproducing
 
-Obtain the raw data (`data/README.md`), then:
+### 1. Point at the data
+
+The data tree is not part of this repository (see `data/README.md`). Tell the
+code where it is, by either:
 
 ```bash
-make merfish        # the headline benchmark
-make osmfish
-make revision       # ablation, boundary evaluation, k-sensitivity
-make figures        # rebuild every figure from the stored results
-make figures-verify # assert the figure specification on the output
+export SPSHEAF_DATA=/path/to/data          # per shell, or
+cp paths.example.toml paths.toml           # and set data_root in it
 ```
+
+With neither set, `<repo>/data` is used. Check it resolved:
+
+```bash
+python -c "from spsheaf import paths; print(paths.data_root())"
+```
+
+### 2. Rebuild the figures from stored results
+
+Fast — this reads the metric tables and panel dumps, and recomputes nothing:
+
+```bash
+make figures         # every figure, into figures/out/
+make figures-verify  # assert the specification on the finished PDFs
+make figures-test    # unit tests for the figure pipeline itself
+```
+
+### 3. Re-run the experiments
+
+Slow, and needs the raw inputs rather than the stored results:
+
+```bash
+make merfish         # the headline benchmark, all five slices
+make osmfish
+make revision        # ablation, boundary evaluation, k-sensitivity
+make matched-selection
+```
+
+Each experiment's README gives its own commands and inputs. `make help` lists
+every target.
 
 Figure scripts write into `figures/out/`, which is created on first run and
 not tracked. `figures/assets/` holds the legacy rasters that the Extended Data

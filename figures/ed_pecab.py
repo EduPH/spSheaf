@@ -32,7 +32,20 @@ HERE = Path(__file__).parent
 REPO = HERE.parent
 PANELS = HERE / "panels"
 PANELS.mkdir(exist_ok=True)
-RESULTS = REPO / "data" / "results" / "pecab"
+def _results(*parts):
+    """Resolve a results path through ``spsheaf.paths``.
+
+    Building it from the repository root instead ignores SPSHEAF_DATA and
+    paths.toml, so a checkout whose data lives elsewhere -- which is the normal
+    case, the tree is tens of gigabytes -- cannot find its own inputs.
+    """
+    import sys
+    sys.path.insert(0, str(REPO / "src"))
+    from spsheaf import paths
+    return paths.results().joinpath(*parts)
+
+
+RESULTS = _results("pecab")
 OUT = HERE / "out" / "ed_pecab.pdf"
 
 TICK = ss.TYPE_PT["normal"]["tick"]

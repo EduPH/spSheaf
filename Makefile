@@ -8,6 +8,13 @@ help:
 install:            ## install spsheaf in editable mode
 	pip install -e .
 
+install-pinned:     ## install the exact versions the results were produced on
+	pip install -r requirements-lock.txt
+	pip install -e .
+
+requirements:       ## regenerate requirements.txt from pyproject.toml
+	python tools/gen_requirements.py
+
 install-benchmark:  ## also install the segfree comparators
 	pip install -e ".[benchmark]"
 
