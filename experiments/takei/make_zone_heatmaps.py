@@ -23,53 +23,95 @@ NON_MARK = {"zone","top_marks","hetero_z","active_z"}
 
 
 def panel_if(a):
+    """Zone archetypes and their chromatin-mark composition.
+
+    Two choices differ from a plain k-means on the zone x mark matrix, and both
+    matter for what the panel is allowed to claim.
+
+    The mark columns are z-scored, but each zone also carries an overall
+    intensity: the per-zone mean across marks accounts for 26% of the total
+    variance, and it dominates the cluster means, so profiles clustered on the
+    raw matrix come out almost collinear (r > 0.99) and look like one archetype
+    repeated. Since the claim is *differential* enrichment, each zone's profile
+    is centred across marks first, which isolates composition from level.
+
+    The number of archetypes is chosen rather than assumed. On composition,
+    the silhouette over k = 2..6 is 0.373, 0.275, 0.296, 0.283, 0.240: one
+    dominant axis, with a weak four-way substructure. k = 4 is the best
+    discrete choice above the trivial split -- highest silhouette of k >= 3,
+    subsample stability 0.91, and every archetype recurring in 40-43 of the 46
+    nuclei -- but two of the four are still r = +0.79 correlated, so the panel
+    shows a dominant heterochromatin-to-active axis with a secondary
+    component, not four independent identities. The caption says so.
+    """
+    from scipy.optimize import linear_sum_assignment
     files = sorted(glob.glob(os.path.join(a.if_dir, "nucleus_*_zone_marks.csv")))
-    rows = []
+    rows, nuc, zid = [], [], []
     for f in files:
         d = pd.read_csv(f)
-        marks = [c for c in d.columns if c not in NON_MARK]
-        rows.append(d[marks])
+        rows.append(d[[c for c in d.columns if c not in NON_MARK]])
+        nuc += [os.path.basename(f).split("_")[1]] * len(d)
+        zid += list(d["zone"].values)
     M = pd.concat(rows, ignore_index=True)
     marks = list(M.columns)
+    nuc = np.array(nuc)
     X = M.values
+    Xc = X - X.mean(1, keepdims=True)           # composition, not level
+
     k = a.k
-    lab = KMeans(k, n_init=10, random_state=0).fit_predict(X)
-    prof = pd.DataFrame(X, columns=marks).groupby(lab).mean()
-    # order marks biologically (keep those present, then any extras)
+    lab = KMeans(k, n_init=100, random_state=0).fit_predict(Xc)
+    prof = pd.DataFrame(Xc, columns=marks).groupby(lab).mean()
+
     order = [m for m in MARK_ORDER if m in marks] + [m for m in marks if m not in MARK_ORDER]
     prof = prof[order]
-    # order archetypes by heterochromatin - active balance (peripheral first)
-    het = [m for m in ["MinSat","mH2A1","LINE1","H3K9me3","H3K9me2","H3K27me3","H4K20me3","Lamin B1"] if m in order]
-    act = [m for m in ["H3K9ac","H3K27ac","H4K16ac","RNAPII Ser5-P","Fibrillarin","SF3a66"] if m in order]
+
+    # name each archetype by the mark panel it is most enriched for, assigning
+    # names one-to-one so that two archetypes can never carry the same label
+    PANELS = {
+        "constitutive heterochromatin": ["MinSat", "mH2A1", "LINE1", "Telomere", "H3K9me3"],
+        "SINE-rich repressive":         ["SINEB1", "H4K20me3", "H3K27me2", "H4K20me2"],
+        "lamina / nucleolus-associated": ["Lamin B1", "H3K27me3", "Fibrillarin"],
+        "active / nuclear speckle":     ["SF3a66", "H3K27ac", "H3K9ac", "H4K16ac", "RNAPII Ser5-P"],
+    }
+    names = list(PANELS)
+    # score each archetype on profile *shape*, not amplitude: dividing by the
+    # profile's own spread stops a strongly modulated archetype from
+    # outbidding a flatter one for its own name
+    Z = prof.div(prof.std(1), axis=0)
+    score = np.array([[Z.loc[i, [m for m in PANELS[nm] if m in order]].mean()
+                       for nm in names] for i in Z.index])
+    ri, ci = linear_sum_assignment(-score)
+    assigned = {prof.index[r]: names[c] for r, c in zip(ri, ci)}
+
+    het = [m for m in PANELS["constitutive heterochromatin"] + PANELS["SINE-rich repressive"] if m in order]
+    act = [m for m in PANELS["active / nuclear speckle"] if m in order]
     balance = prof[het].mean(1) - prof[act].mean(1)
     prof = prof.loc[balance.sort_values(ascending=False).index]
-    sizes = pd.Series(lab).value_counts()
-    def tag(rowvals):
-        top = [order[j] for j in np.argsort(-rowvals)[:3]]
-        hetset = {"MinSat","mH2A1","LINE1","SINEB1","H3K9me3","H3K9me2","H3K27me3","H3K27me2","H4K20me3"}
-        if "Lamin B1" in top: return "lamina-associated"
-        if any(t in hetset for t in top): return "heterochromatin/repressive"
-        if any(t in {"SF3a66","RNAPII Ser5-P","H3K27ac","H3K9ac","H4K16ac"} for t in top): return "active/speckle"
-        if "Fibrillarin" in top: return "nucleolar"
-        return "mixed"
-    labels = [f"Zone type {i+1}: {tag(prof.iloc[i].values)}" for i in range(len(prof))]
 
-    fig, ax = plt.subplots(figsize=(0.42*len(order)+4, 0.6*len(prof)+2))
-    im = ax.imshow(prof.values, cmap="RdBu_r", vmin=-1, vmax=1, aspect="auto")
-    ax.set_xticks(range(len(order))); ax.set_xticklabels(order, rotation=90, fontsize=8)
-    ax.set_yticks(range(len(prof))); ax.set_yticklabels(labels, fontsize=9)
-    ax.set_ylim(len(prof)-0.5, -0.5)
-    for i in range(len(prof)):
-        ax.text(len(order)-0.35, i, f"n={sizes[prof.index[i]]}", ha="left", va="center", fontsize=7, color="0.4")
-    fig.colorbar(im, ax=ax, shrink=0.6, pad=0.06, label="mean mark z-score")
-    ax.set_title(f"IF nuclear zones: chromatin-mark enrichment per zone type\n"
-                 f"({len(files)} nuclei, {len(M)} zones pooled into {k} archetypes)", fontsize=10)
-    fig.tight_layout()
-    out = os.path.join(a.if_dir, "zone_mark_heatmap.png")
-    fig.savefig(out, dpi=400, bbox_inches="tight"); plt.close(fig)
-    prof.round(2).to_csv(os.path.join(a.if_dir, "zone_mark_heatmap.csv"))
-    print(f"[if] -> {out}  ({k} zone archetypes x {len(order)} marks)")
-    for lb in labels: print("   ", lb)
+    sizes = pd.DataFrame({
+        "archetype": [assigned[i] for i in prof.index],
+        "n_zones": [int((lab == i).sum()) for i in prof.index],
+        "n_nuclei": [len(set(nuc[lab == i])) for i in prof.index],
+    })
+    prof.index = [assigned[i] for i in prof.index]
+    prof.index.name = "archetype"
+
+    C = np.corrcoef(prof.values)
+    worst = C[np.triu_indices(len(prof), 1)].max()
+
+    prof.round(3).to_csv(os.path.join(a.if_dir, "zone_mark_heatmap.csv"))
+    sizes.to_csv(os.path.join(a.if_dir, "zone_archetype_sizes.csv"), index=False)
+    # per-nucleus zone id -> pooled archetype, so a single-nucleus map can be
+    # coloured by archetype rather than by its own local cluster numbering
+    pd.DataFrame({"nucleus": nuc, "zone": zid,
+                  "archetype": [assigned[i] for i in lab]}).to_csv(
+        os.path.join(a.if_dir, "zone_archetype_assignment.csv"), index=False)
+    print(f"[if] {len(files)} nuclei, {len(M)} zones -> {k} archetypes x {len(order)} marks")
+    print(f"[if] most positive correlation between archetype profiles: r = {worst:+.2f}")
+    for _, r in sizes.iterrows():
+        print(f"     {r.archetype:32s} n={r.n_zones:3d} zones, {r.n_nuclei}/{len(files)} nuclei")
+    print("[if] wrote zone_mark_heatmap.csv, zone_archetype_sizes.csv, "
+          "zone_archetype_assignment.csv; draw with figures/ed_ifheat_panels.py")
 
 
 # mouse chromosome protein-coding gene density (genes per Mb, GRCm38/mm10; approx.)
@@ -148,7 +190,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--panel", required=True, choices=["if","dna","dnazone"])
     ap.add_argument("--if-dir", default="output_takei_if")
-    ap.add_argument("--k", type=int, default=5)
+    ap.add_argument("--k", type=int, default=4)
     ap.add_argument("--dna-radial", default="output_takei_feat_full1/certification_radial.csv")
     ap.add_argument("--dna-nucleus", default="0_1")
     ap.add_argument("--dna-zones-dir", default="output_takei_feat_full1")

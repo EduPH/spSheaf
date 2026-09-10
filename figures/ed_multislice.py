@@ -70,18 +70,28 @@ def panel_b(meta, path):
     vals = meta["agreement"]
     ax.bar(range(len(vals)), vals, width=0.68, color=ss.METHOD_COLORS["spSheaf"])
     for i, v in enumerate(vals):
+        # the white backing keeps a value legible where it lands on one of the
+        # two reference lines (0.631 sits just under the mean line)
         ax.text(i, v + 0.015, f"{v:.3f}", ha="center", va="bottom",
-                fontsize=ss.TYPE_PT["normal"]["tick"])
+                fontsize=ss.TYPE_PT["normal"]["tick"], zorder=5,
+                bbox=dict(facecolor="white", edgecolor="none", pad=0.6))
     ub = meta["self_alignment"]["agreement"]
-    ax.axhline(ub, color="#333333", lw=0.7, ls=(0, (3, 2)))
-    ax.text(len(vals) - 0.6, ub + 0.015, f"self-alignment upper bound {ub:.3f}",
-            ha="right", va="bottom", fontsize=ss.TYPE_PT["normal"]["tick"], color="#333333")
-    ax.axhline(meta["mean_agreement"], color=ss.METHOD_COLORS["spSheaf"], lw=0.7, ls=(0, (1, 1.5)))
-    ax.text(-0.35, 0.985, f"mean of the four pairs {meta['mean_agreement']:.3f} (dotted)",
-            ha="left", va="top", fontsize=ss.TYPE_PT["normal"]["tick"],
-            color=ss.METHOD_COLORS["spSheaf"])
+    mean = meta["mean_agreement"]
+    dashed = ax.axhline(ub, color="#333333", lw=0.7, ls=(0, (3, 2)))
+    dotted = ax.axhline(mean, color=ss.METHOD_COLORS["spSheaf"], lw=0.7, ls=(0, (1, 1.5)))
+    # Both reference values used to be written as free text near the top of the
+    # axes, where the two strings overlapped. A legend above the bars lays them
+    # out instead, and the y limit is raised to make room for it while the
+    # ticks still stop at 1.0, which is the range agreement can take.
     ax.set_xticks(range(len(vals))); ax.set_xticklabels(names)
-    ax.set_ylim(0, 1.0)
+    ax.set_ylim(0, 1.30)
+    ax.set_yticks(np.arange(0, 1.01, 0.2))
+    ax.legend([dashed, dotted],
+              [f"self-alignment upper bound {ub:.3f}",
+               f"mean of the four pairs {mean:.3f}"],
+              loc="upper left", frameon=False, handlelength=2.2,
+              fontsize=ss.TYPE_PT["normal"]["tick"], labelspacing=0.35,
+              borderaxespad=0.2, handletextpad=0.6)
     ax.set_xlabel("adjacent slice pair")
     ax.set_ylabel("label agreement")
     ss.save_panel(fig, path)

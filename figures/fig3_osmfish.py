@@ -257,11 +257,17 @@ def _boundary(path, arr, key, title):
     g, b = arr["grid_coords"], np.asarray(arr[key], dtype=float)
     lo, hi = np.percentile(b, [1, 99])
     fig, ax = ss.panel(44, 62)
-    fig.subplots_adjust(left=0.02, right=0.78, top=0.98, bottom=0.06)
+    # The map stops at 0.70 rather than 0.78 so that the bar AND its rotated
+    # label fit inside the 44 mm panel. save_panel keeps the declared size
+    # rather than cropping to the drawn content, so anything past the right
+    # edge is clipped in the figure: at 0.78 the label was cut off.
+    fig.subplots_adjust(left=0.02, right=0.70, top=0.98, bottom=0.06)
     sc = ax.scatter(g[:, 0], g[:, 1], s=0.7, c=b, cmap="inferno",
                     vmin=lo, vmax=hi, linewidths=0, rasterized=True)
     _cells(ax, g)
-    cax = ax.inset_axes([1.06, 0.08, 0.05, 0.46])
+    # centred on the panel, so the label -- which is longer than the bar it is
+    # centred on -- has room above and below it
+    cax = ax.inset_axes([1.05, 0.26, 0.06, 0.48])
     cb = fig.colorbar(sc, cax=cax)
     cb.set_label(title, fontsize=TICK, labelpad=2)
     cb.ax.tick_params(labelsize=TICK, length=1.6, width=0.4, pad=1.2)

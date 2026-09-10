@@ -151,25 +151,42 @@ def ed_dnaterr() -> Layout:
 
 
 def ed_ifheat() -> Layout:
-    """a radial certification; b archetype x mark heatmap, both centred;
-    c one nucleus as sections and slabs, drawn from its zone table."""
-    from ed_nucleus_panels import nucleus_row
+    """a radial certification; b archetype x mark heatmap, drawn from the
+    archetype tables; c one nucleus as one section and one orthogonal slab."""
+    from ed_nucleus_panels import ZONE_COLORS, nucleus_row
+    from ed_ifheat_panels import zone_mark_heatmap
     from spsheaf import paths
+    import pandas as pd
     name = "ed_ifheat"
-    pa, ha = place(name, "if_certification.png", 100.0)
-    pb, hb = place(name, "if_zone_mark_heatmap.png", 130.0)
+    ifdir = paths.results("takei") / "output_takei_if"
+    pa, ha = place(name, "if_certification.png", 88.0)
+    pb = PANELS / "ed_ifheat_archetypes.pdf"
+    hb = zone_mark_heatmap(ifdir / "zone_mark_heatmap.csv",
+                           ifdir / "zone_archetype_sizes.csv", pb, width_mm=150.0)
+    # c keeps this nucleus's own zones -- three of its five fall in one pooled
+    # archetype, so recolouring by archetype would merge them -- and names each
+    # zone's archetype in the legend, which is what links c to b
+    SHORT = {"constitutive heterochromatin": "constitutive het.",
+             "SINE-rich repressive": "SINE repressive",
+             "lamina / nucleolus-associated": "lamina/nucleolar",
+             "active / nuclear speckle": "active/speckle"}
+    asg = pd.read_csv(ifdir / "zone_archetype_assignment.csv")
+    asg = asg[asg.nucleus == 13]
+    zone_labels = {int(r.zone): f"zone {int(r.zone)} \u00b7 {SHORT.get(r.archetype, r.archetype)}"
+                   for _, r in asg.iterrows()}
     pc = PANELS / "ed_ifheat_nucleus.pdf"
-    hc = nucleus_row(paths.results("takei") / "output_takei_if" / "nucleus_13_zones.csv",
-                     pc, width_mm=W - 12.0)
+    hc = nucleus_row(ifdir / "nucleus_13_zones.csv", pc, width_mm=W - 12.0,
+                     n_sections=1, colors=ZONE_COLORS, scale_um=2,
+                     names=zone_labels, slabs=("xz",), legend_w=0.26)
     ya = TOP
-    yb = ya + ha + GAP + 2.0
-    yc = yb + hb + GAP + 2.0
-    total = yc + hc + 3.0
+    yb = ya + ha + GAP
+    yc = yb + hb + GAP
+    total = yc + hc + 2.0
     return Layout(
         name=name, width_mm=W, height_mm=total,
         panels=[
-            Panel("a", pa, (W - 100.0) / 2, ya, label_dx=-4, label_dy=-5),
-            Panel("b", pb, (W - 130.0) / 2, yb, label_dx=-4, label_dy=-5),
+            Panel("a", pa, (W - 88.0) / 2, ya, label_dx=-4, label_dy=-5),
+            Panel("b", pb, (W - 150.0) / 2, yb, label_dx=-4, label_dy=-5),
             Panel("c", pc, 6.0, yc, label_dx=-4, label_dy=-3),
         ],
     )
@@ -177,7 +194,11 @@ def ed_ifheat() -> Layout:
 
 #: ed_scale is now drawn from data by ed_scale.py (its Stereo-seq panel is
 #: still a placed raster); the builder above is kept for reference.
-BUILDERS = [ed_merfishslices, ed_methodval, ed_dnaterr, ed_ifheat]
+#: ed_merfishslices moved to its own script (figures/ed_merfishslices.py), which
+#: draws from the cache instead of placing August rasters; ed_methodval was
+#: dropped from the paper (its claim is now measured on real data, see
+#: experiments/merfish/method_validation.py).
+BUILDERS = [ed_dnaterr, ed_ifheat]
 
 
 def main():

@@ -115,6 +115,9 @@ cache:              ## build the shared MERFISH cache for SLICE (slow, once)
 boundary-eval:      ## memo 3: score the boundary FIELD directly
 	python -m experiments.merfish.boundary_eval --slice $(SLICE)
 
+method-validation:  ## synthetic check: what the subspace comparison sees that a kernel cannot
+	python -m experiments.merfish.method_validation
+
 sheaf-ablation:     ## memo 2: sheaf vs simpler local-subspace controls
 	python -m experiments.merfish.sheaf_ablation --slice $(SLICE)
 
@@ -159,6 +162,7 @@ figures:            ## build every manuscript figure from data
 	cd $(FIGDIR) && python ed_scale.py
 	cd $(FIGDIR) && python ed_multislice.py
 	cd $(FIGDIR) && python ed_spacetx.py
+	cd $(FIGDIR) && python ed_merfishslices.py
 	cd $(FIGDIR) && python ed_composites.py
 
 figures-verify:     ## assert the specification on the composed PDFs
@@ -171,7 +175,6 @@ figures-verify:     ## assert the specification on the composed PDFs
 	  $(FIGDIR)/out/ed_pecab.pdf \
 	  $(FIGDIR)/out/ed_scale.pdf \
 	  $(FIGDIR)/out/ed_merfishslices.pdf \
-	  $(FIGDIR)/out/ed_methodval.pdf \
 	  $(FIGDIR)/out/ed_dnaterr.pdf \
 	  $(FIGDIR)/out/ed_ifheat.pdf \
 	  $(FIGDIR)/out/ed_multislice.pdf \
