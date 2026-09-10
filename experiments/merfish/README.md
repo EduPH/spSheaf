@@ -30,6 +30,22 @@ Reference settings: δ = 15 µm, h = 25 µm, k_graph = 6, k_nbrs = 50, d = 6,
 Per-slice ARI 0.511, 0.525, 0.451, 0.660, 0.652. The only stochastic step is
 the k-means initialization, and it moves ARI by ±0.008.
 
+**The domain maps of Fig. 2a** (`segfree_panels.py`, `make panels-segfree`):
+slice 0.19, per annotated cell, the annotation and every method's labels
+Hungarian-matched to it. spSheaf is re-clustered from the `_cache` fibers and
+boundary field at the defaults (ARI 0.62 on this slice for that run; the
+20-seed pipeline mean is 0.660); the competitors are the tracked per-slice-best
+label tables under `benchmarks/segfree/results/labels/`, i.e. each at its most
+favorable in-sample configuration (FICTURE 0.28, Points2Regions 0.42, SSAM
+0.22 on this slice).
+
+**Multi-slice alignment, ED Fig. 4** (`multislice_panels.py`, `make
+panels-multislice`): the five slices through the pipeline at the defaults
+(seed 42), gene-centroid registration and the self-alignment control, dumped
+to `panels/multislice.npz`. Mean adjacent-pair agreement 0.675 (0.633–0.722),
+self-alignment upper bound 0.911. Needs ~6 GB: the loader keeps only the
+annotated slices and nine columns of the molecule table.
+
 **What the sheaf term contributes** (`sheaf_ablation.py`; ten arms differing
 only in the edge score, everything else identical, means over 5 slices × 5
 seeds):
@@ -65,4 +81,4 @@ bound. Clustering all slices jointly was tried and rejected (mean ARI ≈ 0.29).
 peaks at the annotated k = 8 on two of five. Coherence rises monotonically
 with k, so it cannot be used to select it.
 
-Feeds Fig. 2a,c,d, Table 1, and Extended Data Figs. 2, 5 and 6.
+Feeds Fig. 2a,c,d, Table 1, and Extended Data Figs. 1, 2 and 3 (ED numbering of 5 Sep 2026: 1 merfishslices, 2 bench, 3 methodval, 4 multislice, 5 osmmodes, 6 spacetx, 7 scale, 8 dnaterr, 9 ifheat, 10 pecab).

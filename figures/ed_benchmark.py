@@ -115,7 +115,8 @@ def panel_c(path):
     """Seed sensitivity, per slice."""
     rows = seed_table()
     fig, ax = ss.panel(84, 52)
-    fig.subplots_adjust(left=0.13, right=0.80, top=0.96, bottom=0.16)
+    # left margin equal to panel a's, so the two y-axes sit on one vertical
+    fig.subplots_adjust(left=0.30, right=0.86, top=0.96, bottom=0.16)
     x = range(len(rows))
     for key, colour, name in (("nmi", "#5AA9D6", "NMI"),
                               ("ari", ss.METHOD_COLORS["spSheaf"], "ARI")):

@@ -51,9 +51,7 @@ def enrich_result(mol, result, grid_spacing=15, bandwidth=25,
     slice_name = result["slice_name"]
     print(f"  Enriching {slice_name} with fibers/stalks...")
 
-    mol_single = io.select_slice(mol, slice_name)
-    if "z" in mol_single.columns and mol_single["z"].nunique() > 1:
-        mol_single = mol_single[mol_single["z"] == 0].copy()
+    mol_single = io.select_slice(mol, slice_name)   # planes follow io.MERFISH_INPUT
 
     grid_coords, fib, gene_names = fibers.build_kernel_fibers(
         mol_single, grid_spacing=grid_spacing, bandwidth=bandwidth)

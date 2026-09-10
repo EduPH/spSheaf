@@ -305,7 +305,7 @@ def run_single_slice(mol, slice_name, n_clusters=8,
     # 6. Boundary detection
     boundary_raw, boundary_smooth = sheaf.compute_boundary_scores(
         fibers_norm, grid_coords, stalks, edges, restrictions,
-        smooth_radius=smooth_radius, verbose=verbose,
+        smooth_radius=smooth_radius, verbose=verbose, k_nbrs=k_nbrs,
     )
 
     # 7. Boundary-aware clustering

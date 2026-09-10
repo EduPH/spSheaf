@@ -94,26 +94,31 @@ def build_kernel_fibers(mol, grid_spacing=15.0, bandwidth=25.0,
     xx, yy = np.meshgrid(x_grid, y_grid)
     grid_coords = np.column_stack([xx.ravel(), yy.ravel()])
 
-    # Gaussian kernel smoothing with 3σ truncation
+    # Gaussian kernel smoothing with 3σ truncation. The radius query is
+    # issued in blocks of grid points: materialising every neighbour list at
+    # once costs (molecules x grid points within 3h) Python ints -- several GB
+    # on osmFISH -- while the result is identical block by block.
     tree = cKDTree(mol_coords)
     radius = 3.0 * bandwidth
-    neighbors_list = tree.query_ball_point(grid_coords, r=radius)
+    block = block_size or 2000
 
     fibers = np.zeros((len(grid_coords), n_genes), dtype=np.float32)
     total_weight = np.zeros(len(grid_coords), dtype=np.float32)
     keep_mask = np.zeros(len(grid_coords), dtype=bool)
 
-    for qi in range(len(grid_coords)):
-        nb = neighbors_list[qi]
-        if len(nb) == 0:
-            continue
-        nb = np.array(nb)
-        dists = np.linalg.norm(mol_coords[nb] - grid_coords[qi], axis=1)
-        weights = np.exp(-0.5 * (dists / bandwidth) ** 2)
-        np.add.at(fibers[qi], mol_gene_idx[nb], weights)
-        total_weight[qi] = weights.sum()
-        if total_weight[qi] >= min_molecules:
-            keep_mask[qi] = True
+    for start in range(0, len(grid_coords), block):
+        end = min(start + block, len(grid_coords))
+        neighbors_list = tree.query_ball_point(grid_coords[start:end], r=radius)
+        for qi, nb in zip(range(start, end), neighbors_list):
+            if len(nb) == 0:
+                continue
+            nb = np.asarray(nb)
+            dists = np.linalg.norm(mol_coords[nb] - grid_coords[qi], axis=1)
+            weights = np.exp(-0.5 * (dists / bandwidth) ** 2)
+            np.add.at(fibers[qi], mol_gene_idx[nb], weights)
+            total_weight[qi] = weights.sum()
+            if total_weight[qi] >= min_molecules:
+                keep_mask[qi] = True
 
     grid_coords = grid_coords[keep_mask]
     fibers = fibers[keep_mask]

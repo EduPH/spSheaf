@@ -44,21 +44,68 @@ def all_metrics(gt, pred, location):
 
 
 # ---------------------------------------------------------------- data loading
-def load_merfish_slice(slice_id, pad=60.0, molecules=None):
-    """Return (adata, molecule DataFrame restricted to that slice, origin offset).
+MER_EXPORT = MER_DIR + "moffitt2018_export_full/molecules_full_add.csv.gz"
+MER_EXPORT_COLS = ["gene", "x", "y", "z", "cell_id", "cell_x", "cell_y", "cell_z",
+                   "matched_h5ad_file", "domain"]
 
-    The molecule table is the raw Moffitt et al. molecule export; slice
-    membership is recovered from the bounding box of the annotated cells,
-    which is unambiguous because slices occupy disjoint coordinate blocks.
+
+def load_merfish_export():
+    """The Moffitt molecule export with the SDMBench slice/domain columns."""
+    import os
+    if not os.path.exists(MER_EXPORT):
+        raise FileNotFoundError(MER_EXPORT)
+    parts = [ch for ch in pd.read_csv(MER_EXPORT, usecols=MER_EXPORT_COLS,
+                                      chunksize=3_000_000, low_memory=False)]
+    return pd.concat(parts, ignore_index=True)
+
+
+def load_merfish_section(slice_id):
+    """Only the rows of one physical section (bregma = -slice_id), read in
+    chunks so the 20.5 M-row export is never held in memory at once."""
+    bregma = -float(slice_id)
+    parts = []
+    for ch in pd.read_csv(MER_EXPORT, usecols=MER_EXPORT_COLS, chunksize=3_000_000, low_memory=False):
+        parts.append(ch[np.isclose(ch.cell_z, bregma)])
+    return pd.concat(parts, ignore_index=True)
+
+
+class _Cells:
+    """The three attributes of the SDMBench AnnData the runners read."""
+    def __init__(self, cells):
+        self.obs_names = cells.index
+        self.obs = cells[["domain"]]
+        self.obsm = {"spatial": cells[["cell_x", "cell_y"]].values}
+
+
+def load_merfish_slice(slice_id, pad=60.0, molecules=None, legacy_bbox=False):
+    """Return (cells, molecules of the physical section).
+
+    ``molecules`` is the export of :func:`load_merfish_export` (or None to
+    load it). The section is selected by its bregma coordinate
+    (``cell_z``): the export lays the twelve bregma sections of animal 1 out
+    in overlapping xy blocks, so the bounding box of the annotated cells,
+    which the benchmark used before 8 Sep 2026 (``legacy_bbox=True``), also
+    captures a second, unrelated section (bregma 0.11 lies on top of -0.19,
+    0.16 on -0.14, 0.21 on -0.09, 0.26 on -0.04, 0.01 on -0.24) and every
+    competitor MERFISH number computed that way was scored on two sections
+    superimposed. All focal planes are kept. Cells are those of the
+    annotation (``matched_h5ad_file``), scored as before.
     """
-    import anndata as ad
-    a = ad.read_h5ad(f"{MER_DIR}MERFISH_{slice_id}.h5ad")
-    xy = a.obsm["spatial"]
     if molecules is None:
-        molecules = pd.read_csv(MER_MOL)
-    m = molecules[(molecules.x >= xy[:, 0].min() - pad) & (molecules.x <= xy[:, 0].max() + pad) &
-                  (molecules.y >= xy[:, 1].min() - pad) & (molecules.y <= xy[:, 1].max() + pad)]
-    return a, m.copy()
+        molecules = load_merfish_export()
+    name = f"MERFISH_{slice_id}.h5ad"
+    ann = molecules[molecules.matched_h5ad_file == name]
+    if len(ann) == 0:
+        raise ValueError(f"no molecules matched to {name}")
+    if legacy_bbox:
+        cx, cy = ann.cell_x, ann.cell_y
+        m = molecules[(molecules.x >= cx.min() - pad) & (molecules.x <= cx.max() + pad) &
+                      (molecules.y >= cy.min() - pad) & (molecules.y <= cy.max() + pad)]
+    else:
+        m = molecules[molecules.cell_z == ann.cell_z.iloc[0]]
+    cells = (ann.drop_duplicates("cell_id").set_index("cell_id")[["cell_x", "cell_y", "domain"]])
+    cells = cells[cells.domain.notna()]
+    return _Cells(cells), m.copy()
 
 
 def nearest_pixel_labels(label_img, cell_xy, x0, y0, scale=1.0):

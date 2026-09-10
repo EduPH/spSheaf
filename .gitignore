@@ -34,3 +34,15 @@ figures/*.zip
 # --- OS ---
 .DS_Store
 Thumbs.db
+
+# --- the manuscript is not part of this repository ---
+docs/Manuscript-NatureMethods/
+
+# --- scratch: staging for cross-machine transfers, pending deletions, and the
+# --- loose results/ dir some third-party tools (FICTURE's eval) write into
+/_staging/
+/_to_delete/
+/results/
+/work/
+/output_sheaf_boundary/
+benchmarks/segfree/results/_to_delete/

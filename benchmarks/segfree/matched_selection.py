@@ -9,9 +9,14 @@ favour, and the reported margin is a lower bound.
 
 This script removes the asymmetry without re-running anything. The competitor
 sweeps in ``results/metrics/`` record every configuration's score on every
-slice, which is exactly what leave-one-slice-out needs:
+slice, which is exactly what leave-one-slice-out needs. By default the
+``*_merfish_clean__*`` tables are read (competitors run on the physical section
+selected by bregma, 8 Sep 2026); ``--legacy`` reads the original
+``*_merfish__*`` tables, which were computed on two superimposed sections (see
+``common.load_merfish_slice``) and are kept only as a record.
 
     for each held-out slice s:
+
         c* = argmax over configurations of mean ARI on the other four slices
         report the score of c* on s
 
@@ -49,8 +54,15 @@ from pathlib import Path
 RESULTS = Path(__file__).resolve().parent / "results"
 SLICES = ["0.04", "0.09", "0.14", "0.19", "0.24"]
 
-#: spSheaf's own numbers, already selected by leave-one-slice-out.
-SPSHEAF = {"ARI": 0.557, "NMI": 0.631}
+#: spSheaf at its one fixed configuration: the 20-seed means of Table 1
+#: (data/results/benchmark_sdmbench/output_seed_sensitivity, section input,
+#: local reference, 9 Sep 2026). History: 0.557/0.631 = May 2026 run;
+#: 0.559/0.641 = July 2026 pipeline on the annotated-cells/z=0 input.
+SPSHEAF = {"ARI": 0.571, "NMI": 0.655}
+SPSHEAF_PER_SLICE = {"ARI": [0.570, 0.632, 0.478, 0.656, 0.518],
+                     "NMI": [0.644, 0.692, 0.582, 0.707, 0.651]}
+LEGACY = False          # set by --legacy: the contaminated bbox inputs
+SUFFIX = lambda: "" if LEGACY else "_clean"
 
 
 # --- loaders: config identity -> {slice: score} -----------------------------
@@ -58,25 +70,59 @@ SPSHEAF = {"ARI": 0.557, "NMI": 0.631}
 def load_points2regions(metric: str) -> dict:
     out: dict = {}
     for s in SLICES:
-        path = RESULTS / "metrics" / f"points2regions_merfish__metrics_{s}.json"
+        path = RESULTS / "metrics" / f"points2regions_merfish{SUFFIX()}__metrics_{s}.json"
         for e in json.loads(path.read_text())["grid"]:
             key = (e["pixel_width"], e["pixel_smoothing"])
             out.setdefault(key, {})[s] = e[metric]
     return out
 
 
+#: SSAM cell-type clustering variants that are part of its configuration grid.
+#: The empty tag is the published recipe of the SSAM paper as SSAM 1.1.3
+#: implements it (built-in normalisation, medoid-correlation outlier filter on,
+#: SNN Louvain resolution 0.15), which in 1.1.3 leaves 5-7 cell types; the
+#: ``_sct_r*`` tags use sctransform normalisation with the outlier filter off
+#: and the Louvain resolution raised to 4 and 8, which recovers 39-44 and 61-63
+#: cell types -- the order of the 50-68 types the SSAM paper reports.
+SSAM_TAGS = ["", "_sct_r4", "_sct_r8"]
+
+
 def load_ssam(metric: str, guided: bool = False) -> dict:
-    stem = "ssam_guided_merfish" if guided else "ssam_merfish"
+    stem = "ssam_guided_merfish" if guided else f"ssam_merfish{SUFFIX()}"
+    tags = [""] if guided else SSAM_TAGS
     out: dict = {}
-    for s in SLICES:
-        path = RESULTS / "metrics" / f"{stem}__metrics_{s}.json"
-        for e in json.loads(path.read_text())["sweep"]:
-            key = json.dumps(e.get("params", {}), sort_keys=True)
-            out.setdefault(key, {})[s] = e[metric]
+    for tag in tags:
+        for s in SLICES:
+            path = RESULTS / "metrics" / f"{stem}__metrics_{s}{tag}.json"
+            if not path.exists():
+                if tag == "":
+                    return {}
+                break
+            for e in json.loads(path.read_text())["sweep"]:
+                if e[metric] != e[metric]:      # NaN: nothing above norm_thres
+                    continue
+                params = dict(e.get("params", {}))
+                params["clustering"] = tag or "published"
+                key = json.dumps(params, sort_keys=True)
+                out.setdefault(key, {})[s] = e[metric]
     return out
 
 
 def load_ficture(metric: str) -> dict:
+    if not LEGACY:
+        # clean rerun: one table per slice from eval_ficture.py; a configuration
+        # is (model, mapping) with the k-means/spatial mappings averaged over
+        # their five seeds, so that a seed is never selected on the annotation
+        out: dict = {}
+        for s in SLICES:
+            path = RESULTS / "metrics" / f"ficture_merfish_clean__metrics_{s}.csv"
+            acc: dict = {}
+            with path.open() as fh:
+                for r in csv.DictReader(fh):
+                    acc.setdefault((r["strategy"], r["model"]), []).append(float(r[metric]))
+            for key, vals in acc.items():
+                out.setdefault(key, {})[s] = st.mean(vals)
+        return out
     out: dict = {}
     with (RESULTS / "ficture_all_settings.csv").open() as fh:
         for r in csv.DictReader(fh):
@@ -120,13 +166,20 @@ def leave_one_slice_out(cfgs: dict) -> tuple[float, list, int]:
     return st.mean(scores), scores, len(set(map(str, winners)))
 
 
+def evaluate_grid(name: str, metric: str) -> dict:
+    return {"Points2Regions": load_points2regions, "FICTURE": load_ficture,
+            "SSAM (de novo)": load_ssam,
+            "SSAM (guided)": lambda m: load_ssam(m, guided=True)}[name](metric)
+
+
 def evaluate(metric: str = "ARI") -> list[dict]:
     methods = [
         ("Points2Regions", load_points2regions(metric)),
         ("FICTURE", load_ficture(metric)),
         ("SSAM (de novo)", load_ssam(metric)),
-        ("SSAM (guided)", load_ssam(metric, guided=True)),
     ]
+    if LEGACY:
+        methods.append(("SSAM (guided)", load_ssam(metric, guided=True)))
     rows = []
     for name, cfgs in methods:
         full = _complete(cfgs)
@@ -219,7 +272,13 @@ def main(argv=None) -> int:
     ap.add_argument("--metric", default="ARI", choices=["ARI", "NMI"])
     ap.add_argument("--latex", action="store_true", help="emit a LaTeX tabular")
     ap.add_argument("--csv", type=Path, help="also write the rows to a CSV")
+    ap.add_argument("--per-slice-csv", type=Path,
+                    help="also write per-slice held-out and argmax scores (Fig. 2b)")
+    ap.add_argument("--legacy", action="store_true",
+                    help="use the original bbox-selected (contaminated) competitor tables")
     args = ap.parse_args(argv)
+    global LEGACY
+    LEGACY = args.legacy
 
     rows = evaluate(args.metric)
     print(report(rows, args.metric))
@@ -238,6 +297,20 @@ def main(argv=None) -> int:
                             f"{r['loo']:.4f}", r["distinct_winners"]])
             w.writerow(["spSheaf", "", "", "", f"{SPSHEAF[args.metric]:.4f}", ""])
         print(f"\nwrote {args.csv}")
+    if args.per_slice_csv:
+        with args.per_slice_csv.open("w", newline="") as fh:
+            w = csv.writer(fh)
+            w.writerow(["method", "slice", "held_out", "per_slice_argmax"])
+            for r in rows:
+                if not r["n_configs"]:
+                    continue
+                full = _complete(dict(evaluate_grid(r["method"], args.metric)))
+                for s, v in zip(SLICES, r["loo_per_slice"]):
+                    w.writerow([r["method"], s, f"{v:.4f}",
+                                f"{max(c[s] for c in full.values()):.4f}"])
+            for s, v in zip(SLICES, SPSHEAF_PER_SLICE[args.metric]):
+                w.writerow(["spSheaf", s, f"{v:.4f}", ""])
+        print(f"wrote {args.per_slice_csv}")
     return 0
 
 

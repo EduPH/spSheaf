@@ -25,6 +25,7 @@ panel shows a top or right spine.
 from __future__ import annotations
 
 import argparse
+import pathlib
 import math
 import sys
 from collections import Counter
@@ -37,20 +38,33 @@ from pypdf import PdfReader
 MM_PER_IN = 25.4
 PT_PER_MM = 72.0 / MM_PER_IN
 
-DEFAULT_ALLOWED_PT = (4.0, 6.0, 8.0, 10.0)
+def _allowed_from_style():
+    """The permitted sizes, taken from the style the figures are drawn with.
+
+    Hard-coding them here lets the checker and the drawing disagree, which is
+    how a retuned register passed review as a wall of failures.
+    """
+    import sys
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    from sheafstyle import ALLOWED_PT
+    return tuple(ALLOWED_PT)
+
+
+DEFAULT_ALLOWED_PT = _allowed_from_style()
 DEFAULT_MIN_DPI = 300.0
 SIZE_TOL = 0.05  # pt
 
 #: Mathtext sets sub- and superscripts at a fixed fraction of the surrounding
 #: size, so `$\alpha_s$` in an 8 pt label legitimately emits a 5.6 pt glyph.
-#: Only the sizes that actually carry mathtext are used as bases: axis labels
-#: (8 pt) and tick labels (6 pt), giving 5.6 and 4.2. The panel-label size is
-#: deliberately excluded -- panel letters are never mathtext, and admitting
-#: 10 x 0.7 = 7.0 pt would make a plain 7 pt mistake indistinguishable from a
-#: subscript.
+#: Only the sizes that actually carry mathtext are used as bases: body text
+#: (7 pt), tick labels (6 pt) and the small register's ticks (5 pt), giving
+#: 4.9, 4.2 and 3.5. The panel-label size is deliberately excluded -- panel
+#: letters are never mathtext, and admitting 8 x 0.7 = 5.6 pt would make a
+#: plain 5.6 pt mistake indistinguishable from a subscript.
 SUBSCRIPT_RATIO = 0.7
-MATHTEXT_BASE_PT = (6.0, 8.0)
-ABSOLUTE_MIN_PT = 4.0
+MATHTEXT_BASE_PT = (5.0, 6.0, 7.0)
+#: A subscript on the smallest permitted base. Nothing may go below it.
+ABSOLUTE_MIN_PT = 3.5
 
 
 def _mat_scale(cm, tm) -> float:

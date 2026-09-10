@@ -1,0 +1,483 @@
+{
+ "slice": "0.19",
+ "tag": "_sct_r8",
+ "n_localmax": 6464,
+ "n_celltypes": 61,
+ "n_molecules": 1956613,
+ "timings": {
+  "resolution": 8.0,
+  "seconds": 537.0242338180542
+ },
+ "domains": {
+  "published": {
+   "ARI": 0.3524525914108268,
+   "NMI": 0.5650686986394706,
+   "HOM": 0.6810937012826684,
+   "COM": 0.48281984795972255,
+   "CHAOS": 0.028088885948716575,
+   "PAS": 0.04221954161640531,
+   "ASW": -0.2860370397591197,
+   "n_pred_domains": 26,
+   "find_domains_s": 8.123725175857544,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  "best_sweep": {
+   "ARI": 0.47554399078119247,
+   "NMI": 0.5999436400996888,
+   "HOM": 0.5806797382568478,
+   "COM": 0.6205295492324593,
+   "CHAOS": 0.027760671991287223,
+   "PAS": 0.02791659486472514,
+   "ASW": -0.1656464292518399,
+   "n_pred_domains": 11,
+   "find_domains_s": 13.590862035751343,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  }
+ },
+ "sweep": [
+  {
+   "ARI": 0.46189792788494316,
+   "NMI": 0.5690338413684389,
+   "HOM": 0.5370423741970352,
+   "COM": 0.605078183042361,
+   "CHAOS": 0.02776067199128722,
+   "PAS": 0.02791659486472514,
+   "ASW": -0.17455870955028982,
+   "n_pred_domains": 9,
+   "find_domains_s": 17.316295862197876,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.3450103907194298,
+   "NMI": 0.4929148671145946,
+   "HOM": 0.4693914462952677,
+   "COM": 0.5189204184991373,
+   "CHAOS": 0.02784913606357733,
+   "PAS": 0.02567637428916078,
+   "ASW": -0.2852873591665952,
+   "n_pred_domains": 10,
+   "find_domains_s": 8.573909997940063,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.47554399078119247,
+   "NMI": 0.5999436400996888,
+   "HOM": 0.5806797382568478,
+   "COM": 0.6205295492324593,
+   "CHAOS": 0.027760671991287223,
+   "PAS": 0.02791659486472514,
+   "ASW": -0.1656464292518399,
+   "n_pred_domains": 11,
+   "find_domains_s": 13.81532073020935,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.36955694064679906,
+   "NMI": 0.5374278308880851,
+   "HOM": 0.52997399773723,
+   "COM": 0.545094324266837,
+   "CHAOS": 0.027854547590216064,
+   "PAS": 0.02671032224711356,
+   "ASW": -0.30775021625769794,
+   "n_pred_domains": 13,
+   "find_domains_s": 3.9128057956695557,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.47530294134048057,
+   "NMI": 0.6001973476555303,
+   "HOM": 0.5853544472415654,
+   "COM": 0.6158125784243286,
+   "CHAOS": 0.027762061012639158,
+   "PAS": 0.028433568843701535,
+   "ASW": -0.25912456867000333,
+   "n_pred_domains": 13,
+   "find_domains_s": 13.631819009780884,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.3691370902726422,
+   "NMI": 0.5379624412432953,
+   "HOM": 0.5335828248449405,
+   "COM": 0.542414547904334,
+   "CHAOS": 0.027854547590216064,
+   "PAS": 0.02791659486472514,
+   "ASW": -0.318627298870598,
+   "n_pred_domains": 15,
+   "find_domains_s": 7.82365083694458,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.4727100188237554,
+   "NMI": 0.5991298329128145,
+   "HOM": 0.5900187469328887,
+   "COM": 0.6085267195227316,
+   "CHAOS": 0.027762061012639158,
+   "PAS": 0.028433568843701535,
+   "ASW": -0.2561872763834031,
+   "n_pred_domains": 15,
+   "find_domains_s": 13.751250982284546,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.3484572202341512,
+   "NMI": 0.5213483368753707,
+   "HOM": 0.5658289090605997,
+   "COM": 0.48335143031462663,
+   "CHAOS": 0.027960808542494178,
+   "PAS": 0.03498190591073583,
+   "ASW": -0.19532005840018998,
+   "n_pred_domains": 18,
+   "find_domains_s": 7.823872089385986,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 8,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.46493261237717054,
+   "NMI": 0.5686963357852645,
+   "HOM": 0.5643241814191315,
+   "COM": 0.5731367664782173,
+   "CHAOS": 0.02786504620027094,
+   "PAS": 0.03170773737721868,
+   "ASW": -0.1559696526055522,
+   "n_pred_domains": 10,
+   "find_domains_s": 13.657399654388428,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.29039890275164226,
+   "NMI": 0.49425873276253507,
+   "HOM": 0.48019866651378645,
+   "COM": 0.5091669822031789,
+   "CHAOS": 0.02785399109610909,
+   "PAS": 0.02860589350336033,
+   "ASW": -0.24899716482675266,
+   "n_pred_domains": 10,
+   "find_domains_s": 8.06803584098816,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.43774579756620746,
+   "NMI": 0.6005955197127155,
+   "HOM": 0.641710635253736,
+   "COM": 0.5644317485636837,
+   "CHAOS": 0.02790707591405798,
+   "PAS": 0.03463725659141823,
+   "ASW": -0.13628412971687742,
+   "n_pred_domains": 13,
+   "find_domains_s": 13.890908002853394,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.45988494968375626,
+   "NMI": 0.5971951133262178,
+   "HOM": 0.6441082124658841,
+   "COM": 0.5566518289344486,
+   "CHAOS": 0.02794356511766688,
+   "PAS": 0.032569360675512665,
+   "ASW": -0.23661574090609352,
+   "n_pred_domains": 13,
+   "find_domains_s": 7.913954973220825,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.4373797167030263,
+   "NMI": 0.6008210398272644,
+   "HOM": 0.6463853442384532,
+   "COM": 0.5612574779282715,
+   "CHAOS": 0.02790846493540992,
+   "PAS": 0.03515423057039462,
+   "ASW": -0.22313004893439464,
+   "n_pred_domains": 15,
+   "find_domains_s": 13.728474855422974,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.4504216034515211,
+   "NMI": 0.5943706515970284,
+   "HOM": 0.6556158979924439,
+   "COM": 0.5435904171091509,
+   "CHAOS": 0.027962776251887835,
+   "PAS": 0.036532827847665,
+   "ASW": -0.32670647912101897,
+   "n_pred_domains": 19,
+   "find_domains_s": 7.8006672859191895,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.4084051261971436,
+   "NMI": 0.5738156346580521,
+   "HOM": 0.6589539884838308,
+   "COM": 0.5081601833700539,
+   "CHAOS": 0.028016036386064883,
+   "PAS": 0.0423918662760641,
+   "ASW": -0.14418598966353305,
+   "n_pred_domains": 20,
+   "find_domains_s": 13.671849012374878,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.4040331544644349,
+   "NMI": 0.5671725694853921,
+   "HOM": 0.6691517830251343,
+   "COM": 0.4921661012781853,
+   "CHAOS": 0.028078228129052214,
+   "PAS": 0.044287437532310875,
+   "ASW": -0.1853806916160583,
+   "n_pred_domains": 24,
+   "find_domains_s": 7.889892816543579,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 12,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.28782953995064864,
+   "NMI": 0.5260447709115059,
+   "HOM": 0.5549941475532495,
+   "COM": 0.49996576228728895,
+   "CHAOS": 0.02795755424309096,
+   "PAS": 0.0367051525073238,
+   "ASW": -0.22778498588779394,
+   "n_pred_domains": 14,
+   "find_domains_s": 13.946868896484375,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.246424469664278,
+   "NMI": 0.4831657497951249,
+   "HOM": 0.48959823846090256,
+   "COM": 0.4769000931749144,
+   "CHAOS": 0.02788980772285479,
+   "PAS": 0.031018438738583492,
+   "ASW": -0.2514375662986751,
+   "n_pred_domains": 12,
+   "find_domains_s": 8.208050727844238,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.6,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.3807799732599088,
+   "NMI": 0.5806474898368472,
+   "HOM": 0.6831224517242492,
+   "COM": 0.5049066226189972,
+   "CHAOS": 0.028058891814732263,
+   "PAS": 0.044287437532310875,
+   "ASW": -0.19173018308923642,
+   "n_pred_domains": 18,
+   "find_domains_s": 13.80124807357788,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.3993681826480754,
+   "NMI": 0.581118397540454,
+   "HOM": 0.6693329519687725,
+   "COM": 0.513448581355674,
+   "CHAOS": 0.02801489699777451,
+   "PAS": 0.03687747716698259,
+   "ASW": -0.22426443158331125,
+   "n_pred_domains": 17,
+   "find_domains_s": 8.292618989944458,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.7,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.3579211063710811,
+   "NMI": 0.5764826289295938,
+   "HOM": 0.7072235506997709,
+   "COM": 0.4865386363536399,
+   "CHAOS": 0.02809253834817467,
+   "PAS": 0.04618300878855764,
+   "ASW": -0.23302152778214857,
+   "n_pred_domains": 25,
+   "find_domains_s": 14.015785932540894,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.3524525914108268,
+   "NMI": 0.5650686986394706,
+   "HOM": 0.6810937012826684,
+   "COM": 0.48281984795972255,
+   "CHAOS": 0.028088885948716575,
+   "PAS": 0.04221954161640531,
+   "ASW": -0.2860370397591197,
+   "n_pred_domains": 26,
+   "find_domains_s": 8.174921035766602,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.8,
+    "norm_thres": 4000
+   }
+  },
+  {
+   "ARI": 0.33722210450196693,
+   "NMI": 0.5677639148372753,
+   "HOM": 0.728389027833926,
+   "COM": 0.4651815837047742,
+   "CHAOS": 0.02818096085856978,
+   "PAS": 0.05014647596070998,
+   "ASW": -0.12350356599218858,
+   "n_pred_domains": 32,
+   "find_domains_s": 13.802028179168701,
+   "frac_background": 0.0,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 1000
+   }
+  },
+  {
+   "ARI": 0.2491692572408346,
+   "NMI": 0.5351588358898318,
+   "HOM": 0.7063680314552062,
+   "COM": 0.43075307993890666,
+   "CHAOS": 0.028159912587765745,
+   "PAS": 0.04635533344821644,
+   "ASW": -0.08754152091784989,
+   "n_pred_domains": 36,
+   "find_domains_s": 7.951134204864502,
+   "frac_background": 0.1895571256246769,
+   "params": {
+    "n_clusters": 20,
+    "merge_remote": true,
+    "merge_thres": 0.9,
+    "norm_thres": 4000
+   }
+  }
+ ]
+}

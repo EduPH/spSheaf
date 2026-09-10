@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neighbors import NearestNeighbors
 
-from spsheaf import fibers, graph, sheaf, evaluation, paths
+from spsheaf import fibers, graph, sheaf, evaluation, paths, io
 
 RAW_CSV = "moffitt2018_export_full/molecules_full_add.csv.gz"
 GRID_SPACING, BANDWIDTH = 15.0, 25.0
@@ -68,15 +68,21 @@ def stage_slice(a):
             f"{src} not found.\n"
             f"Expected the Moffitt molecule table under data/raw/merfish/. "
             f"Check paths.toml or SPSHEAF_DATA.")
-    cols = ["gene", "x", "y", "z", "matched_h5ad_file", "domain"]
+    cols = ["gene", "x", "y", "z", "cell_z", "matched_h5ad_file", "domain"]
+    bregma = -float(a.slice.replace("MERFISH_", "").replace(".h5ad", ""))
     parts = []
     for ch in pd.read_csv(src, usecols=cols, chunksize=2_000_000, low_memory=False):
-        parts.append(ch[ch.matched_h5ad_file == a.slice][["gene", "x", "y", "z", "domain"]])
+        if io.MERFISH_INPUT == "section":
+            keep = np.isclose(ch.cell_z.to_numpy(dtype=float), bregma)
+        else:
+            keep = (ch.matched_h5ad_file == a.slice).to_numpy()
+        parts.append(ch[keep][["gene", "x", "y", "z", "domain"]])
     df = pd.concat(parts, ignore_index=True)
-    if df.z.nunique() > 1:
-        df = df[df.z == df.z.value_counts().idxmax()]
+    if io.MERFISH_INPUT != "section" and df.z.nunique() > 1:
+        df = df[df.z == df.z.value_counts().idxmax()]     # legacy: one plane
     df["x_local"] = df.x - df.x.min()
     df["y_local"] = df.y - df.y.min()
+    print(f"  input policy: {io.MERFISH_INPUT}")
     out = parquet_path(a.slice)
     df.to_parquet(out)
     print(f"{a.slice}: {len(df):,} molecules, {df.gene.nunique()} genes, "
@@ -99,9 +105,7 @@ def stage_build(a):
 
     # global- and locally-centered fibers: the centering ablation needs both
     fib_global = fib - fib.mean(axis=0)
-    nn = NearestNeighbors(n_neighbors=K_NBRS).fit(grid)
-    _, nbr = nn.kneighbors(grid)
-    fib_local = fib - fib[nbr].mean(axis=1)
+    fib_local = fib - sheaf.local_means(fib, grid, K_NBRS)   # deterministic ties
 
     out = cache_path(a.slice)
     np.savez_compressed(

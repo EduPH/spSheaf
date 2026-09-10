@@ -9,9 +9,11 @@ domains, delineated by an explicit boundary field. It builds a cellular sheaf
 over a spatial graph and targets the *discontinuities* of that sheaf directly;
 it never assembles or diagonalizes a sheaf Laplacian.
 
-The construction transfers unchanged across platform, dimension and modality:
-the same pipeline runs on 2D transcript maps, on 3D subnuclear chromatin
-imaging, and on multiplexed protein panels.
+The geometric core — fibers, stalks, restriction maps and the disagreement
+score — is the same across platform, dimension and modality: it runs on 2D
+transcript maps, on 3D subnuclear chromatin imaging, and on multiplexed protein
+panels. What is set per dataset is the fiber contents, the spatial
+discretization, the stalk dimension and the number of output domains.
 
 ## Install
 
@@ -73,7 +75,7 @@ Two annotated benchmarks carry the quantitative claims.
 | Dataset | ARI | NMI | Note |
 |---|---|---|---|
 | MERFISH mouse hypothalamus, 5 slices | **0.559 ± 0.008** | **0.641 ± 0.004** | 20 k-means seeds; 8 annotated domains |
-| osmFISH somatosensory cortex | 0.538 | 0.639 | 11 annotated regions, single section |
+| osmFISH somatosensory cortex | 0.620 | 0.694 | 11 annotated regions, single section; annotation registered label-free |
 
 Against the SDMBench comparison of Yuan et al. 2024 on MERFISH, spSheaf ranks
 **first of twelve on NMI and homogeneity** and second on completeness, and
@@ -90,8 +92,9 @@ identically to all four:
 | Points2Regions | 0.258 |
 | SSAM (de novo) | 0.208 |
 
-On osmFISH, SSAM reaches 0.566 against spSheaf's 0.538 — osmFISH is one of
-SSAM's own published analyses and its released settings were tuned on it.
+On osmFISH spSheaf reaches ARI 0.620 / NMI 0.694 against SSAM's 0.566 / 0.721
+(SSAM leads on NMI) — osmFISH is one of SSAM's own published analyses and its
+released settings were tuned on it.
 
 Ten ablation arms differing only in the edge score show the sheaf term is
 worth **+0.075 ARI** over no boundary weighting and **+0.045** over its own
@@ -131,7 +134,12 @@ make figures-test    # unit tests for the figure pipeline itself
 
 ### 3. Re-run the experiments
 
-Slow, and needs the raw inputs rather than the stored results:
+Slow, and needs the raw inputs rather than the stored results. One exception:
+the segmentation-free comparison (SSAM, Points2Regions, FICTURE) is
+reproducible from the per-cell label tables and per-configuration metric
+tables tracked under `benchmarks/segfree/results/` (`make matched-selection`),
+not from raw competitor inputs, which are not redistributed;
+`python -m benchmarks.segfree.inputs` reports what is missing.
 
 ```bash
 make merfish         # the headline benchmark, all five slices

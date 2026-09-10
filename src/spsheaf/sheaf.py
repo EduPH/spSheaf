@@ -26,12 +26,34 @@ encode smooth within-domain gradients, not between-domain
 discontinuities).
 """
 
+import os
+
 import numpy as np
 import time
 from scipy.ndimage import gaussian_filter
 from scipy.spatial import cKDTree
 from sklearn.decomposition import PCA
 from sklearn.neighbors import NearestNeighbors
+
+
+def knn_indices(grid_coords, k_nbrs):
+    """The k nearest grid points of every vertex, with deterministic ties.
+
+    On a regular grid many neighbours sit at exactly the k-th distance, and
+    which of them a k-d tree returns depends on the library build; the
+    locally centered coordinates then differ between machines by up to 0.2
+    (observed between macOS and Linux on the same cache). Ties are broken by
+    vertex index, so the neighbourhood is a function of the grid alone.
+    """
+    k_query = min(len(grid_coords), 2 * k_nbrs)
+    nbrs = NearestNeighbors(n_neighbors=k_query).fit(grid_coords)
+    dist, idx = nbrs.kneighbors(grid_coords)
+    dist = np.round(dist, 6)
+    out = np.empty((len(grid_coords), k_nbrs), dtype=int)
+    for i in range(len(grid_coords)):
+        order = np.lexsort((idx[i], dist[i]))          # by distance, then index
+        out[i] = idx[i][order][:k_nbrs]
+    return out
 
 
 def compute_stalks(fibers_norm, grid_coords, uniform_dim=6, k_nbrs=50,
@@ -64,8 +86,7 @@ def compute_stalks(fibers_norm, grid_coords, uniform_dim=6, k_nbrs=50,
     global_mean = fibers_norm.mean(axis=0)
     fibers_centered = fibers_norm - global_mean
 
-    nbrs = NearestNeighbors(n_neighbors=k_nbrs).fit(grid_coords)
-    _, indices = nbrs.kneighbors(grid_coords)
+    indices = knn_indices(grid_coords, k_nbrs)
 
     stalks = []
     for i in range(N):
@@ -89,7 +110,7 @@ def compute_restriction_maps(stalks, edges, stalk_dim, verbose=True):
     is decomposed as M_uv = L Σ R^T. The restriction maps are:
 
         F_{u◁e} = L^T    (projects u's stalk into shared edge space)
-        F_{v◁e} = R      (projects v's stalk into shared edge space)
+        F_{v◁e} = R^T    (projects v's stalk into shared edge space)
 
     The singular values σ_1, ..., σ_d are the cosines of the principal
     angles between the two stalk subspaces.
@@ -131,8 +152,35 @@ def compute_restriction_maps(stalks, edges, stalk_dim, verbose=True):
     return restrictions
 
 
+#: Reference point of the local coordinates xi_v = U_v^T (f_v - c_v).
+#:
+#: ``local``   c_v = mu_v, the mean fiber of v's k_nbrs grid neighbours -- the
+#:             neighbourhood the stalk is fitted on. xi_v is then v's own
+#:             local-PCA score, a local section. The default.
+#: ``tissue``  c_v = fbar, the mean fiber of the section: the optional term,
+#:             which adds (L^T U_u^T - R^T U_v^T)(mu - fbar) to every edge
+#:             (the construction reported up to 9 Sep 2026).
+#: Set with SPSHEAF_REFERENCE=local|tissue.
+def _default_reference():
+    r = os.environ.get("SPSHEAF_REFERENCE") or {"local": "local", "global": "tissue"}.get(
+        os.environ.get("SPSHEAF_CENTERING", ""), "local")
+    if r not in ("local", "tissue"):
+        raise ValueError(f"SPSHEAF_REFERENCE must be 'local' or 'tissue', got {r!r}")
+    return r
+
+
+REFERENCE = _default_reference()
+
+
+def local_means(fibers_norm, grid_coords, k_nbrs=50):
+    """Mean fiber over each vertex's k_nbrs nearest grid neighbours (self included)."""
+    nbr = knn_indices(grid_coords, k_nbrs)
+    return fibers_norm[nbr].mean(axis=1)
+
+
 def compute_boundary_scores(fibers_norm, grid_coords, stalks, edges,
-                            restrictions, smooth_radius=60.0, verbose=True):
+                            restrictions, smooth_radius=60.0, verbose=True,
+                            reference=None, k_nbrs=50):
     """
     Compute per-vertex boundary scores from sheaf disagreement.
 
@@ -163,6 +211,10 @@ def compute_boundary_scores(fibers_norm, grid_coords, stalks, edges,
         Gaussian smoothing σ for the boundary field (μm).
     verbose : bool
         Print statistics.
+    reference : {"local", "tissue"} or None
+        Reference point of the local coordinates; default :data:`REFERENCE`.
+    k_nbrs : int
+        Neighbourhood of the local reference (the stalk neighbourhood).
 
     Returns
     -------
@@ -172,8 +224,13 @@ def compute_boundary_scores(fibers_norm, grid_coords, stalks, edges,
         Spatially smoothed boundary scores.
     """
     N = len(grid_coords)
-    global_mean = fibers_norm.mean(axis=0)
-    fibers_c = fibers_norm - global_mean
+    reference = reference or REFERENCE
+    if reference == "local":
+        fibers_c = fibers_norm - local_means(fibers_norm, grid_coords, k_nbrs)
+    elif reference == "tissue":
+        fibers_c = fibers_norm - fibers_norm.mean(axis=0)
+    else:
+        raise ValueError(f"reference must be 'local' or 'tissue', got {reference!r}")
 
     t0 = time.time()
 
@@ -208,7 +265,7 @@ def compute_boundary_scores(fibers_norm, grid_coords, stalks, edges,
     if verbose:
         elapsed = time.time() - t0
         print(
-            f"  Boundary scores: mean={boundary_smooth.mean():.4f}, "
+            f"  Boundary scores ({reference} reference): mean={boundary_smooth.mean():.4f}, "
             f"max={boundary_smooth.max():.4f} ({elapsed:.1f}s)"
         )
 

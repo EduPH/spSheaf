@@ -1,8 +1,10 @@
 # Figure pipeline
 
-Automates the collaborator's figure specification — 180 mm canvas, ≥300 dpi,
-6/8/10 pt type, no axis frames on spatial plots — so it holds by construction
-instead of by memory.
+Automates the figure specification — 180 mm canvas, ≥300 dpi, 6/7/8 pt type
+(tick labels / other text / panel letters; Nature's artwork guide puts all
+figure text at 5–7 pt and panel letters at 8 pt bold, so the 6/8/10 pt first
+proposed sits above the journal's maximum), no axis frames on spatial plots —
+so it holds by construction instead of by memory.
 
 ```
 make figures          # build every figure from data
@@ -22,6 +24,16 @@ through `sheafstyle`; `ed_composites.py` places them at a declared size with
 spec-compliant panel letters, and reports the resolution of each. Replacing
 one means writing a figure script that draws it from data and dropping the
 raster.
+
+## The sizes only hold at the drawn width
+
+Every figure is 180 mm across, Nature's double-column width, and the type
+sizes are Nature's: all text 5-7 pt, panel letters 8 pt bold. Those are final
+sizes. Place a 180 mm figure in a 131 mm text block -- which is what
+`\includegraphics[width=\linewidth]` does in the manuscript template -- and
+everything is scaled to 73%: a 6 pt tick label reaches the page at 4.4 pt.
+
+Place figures at 180 mm, not at `\linewidth`.
 
 ## The one rule
 
@@ -57,7 +69,7 @@ Two consequences:
 ```python
 import sheafstyle as ss
 
-ss.apply()                      # normal register: 6/8/10 pt
+ss.apply()                      # normal register: 6/7/8 pt
 fig, ax = ss.panel(52, 42)      # millimetres, exact
 fig.subplots_adjust(left=0.26, right=0.98, top=0.94, bottom=0.32)
 ax.bar(names, values, color=[ss.METHOD_COLORS[n] for n in names])

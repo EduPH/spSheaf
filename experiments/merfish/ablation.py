@@ -12,7 +12,7 @@ setting where the sheaf boundary weighting matters most.
 import argparse, os, numpy as np, pandas as pd
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 from sklearn.metrics import adjusted_rand_score as ARI, normalized_mutual_info_score as NMI
-from spsheaf import fibers, graph, sheaf, clustering, evaluation
+from spsheaf import fibers, graph, sheaf, clustering, evaluation, io
 
 CSV = "moffitt2018_export_full/molecules_full_add.csv.gz"
 PARQ = "ablation_slice.parquet"
@@ -20,12 +20,17 @@ CACHE = "ablation_cache.npz"
 
 
 def stage_cache(a):
-    cols = ["gene", "x", "y", "z", "matched_h5ad_file", "domain"]
+    cols = ["gene", "x", "y", "z", "cell_z", "matched_h5ad_file", "domain"]
+    bregma = -float(a.slice.replace("MERFISH_", "").replace(".h5ad", ""))
     parts = []
     for ch in pd.read_csv(CSV, usecols=cols, chunksize=2_000_000, low_memory=False):
-        parts.append(ch[ch.matched_h5ad_file == a.slice][["gene", "x", "y", "z", "domain"]])
+        if io.MERFISH_INPUT == "section":       # whole section, all planes
+            keep = np.isclose(ch.cell_z.to_numpy(dtype=float), bregma)
+        else:
+            keep = (ch.matched_h5ad_file == a.slice).to_numpy()
+        parts.append(ch[keep][["gene", "x", "y", "z", "domain"]])
     df = pd.concat(parts, ignore_index=True)
-    if df.z.nunique() > 1:                      # keep a single z-plane
+    if io.MERFISH_INPUT != "section" and df.z.nunique() > 1:   # legacy: one plane
         df = df[df.z == df.z.value_counts().idxmax()]
     df["x_local"] = df.x - df.x.min(); df["y_local"] = df.y - df.y.min()
     df.to_parquet(PARQ)

@@ -10,6 +10,8 @@ Tissue slices are identified via the ``matched_h5ad_file`` column
 """
 
 import pandas as pd
+import os
+
 import numpy as np
 
 
@@ -87,7 +89,34 @@ def identify_slices(mol, verbose=True):
     return pd.DataFrame(rows)
 
 
-def select_slice(mol, slice_name, filter_z0=True, verbose=True):
+#: Which molecules of a Moffitt slice spSheaf reads.
+#:
+#: ``section``      every molecule of the physical section (rows whose
+#:                  ``cell_z`` equals the slice's bregma coordinate), all
+#:                  seven focal planes. Identical to the comparators' input
+#:                  (benchmarks/segfree/common.py). Default since 8 Sep 2026.
+#: ``annotated_z0`` the molecules of the annotated cells only
+#:                  (``matched_h5ad_file == slice``) on the z = 0 plane; the
+#:                  input behind the results reported up to 8 Sep 2026.
+#: Set with the environment variable SPSHEAF_MERFISH_INPUT.
+MERFISH_INPUT = os.environ.get("SPSHEAF_MERFISH_INPUT", "section")
+
+
+def section_rows(mol, slice_name):
+    """Boolean mask of the molecules of ``slice_name``'s physical section.
+
+    The export lays the twelve bregma sections of one animal out in
+    overlapping xy blocks, so the section must be selected by ``cell_z``, not
+    by coordinates; ``matched_h5ad_file`` marks only the annotated cells.
+    """
+    ann = mol["matched_h5ad_file"] == slice_name
+    if "cell_z" not in mol.columns:
+        return ann
+    bregma = mol.loc[ann, "cell_z"].iloc[0]
+    return np.isclose(mol["cell_z"].to_numpy(dtype=float), bregma)
+
+
+def select_slice(mol, slice_name, filter_z0=None, verbose=True, policy=None):
     """
     Extract molecules for a single slice with local coordinates.
 
@@ -100,8 +129,11 @@ def select_slice(mol, slice_name, filter_z0=True, verbose=True):
         Full molecule table.
     slice_name : str
         Value from the ``matched_h5ad_file`` column.
-    filter_z0 : bool
-        Keep only z=0 when multiple z-planes are present.
+    filter_z0 : bool or None
+        Keep only z=0 when multiple z-planes are present. ``None`` follows
+        the policy (all planes for ``section``, z=0 for ``annotated_z0``).
+    policy : str or None
+        ``"section"`` or ``"annotated_z0"``; default :data:`MERFISH_INPUT`.
     verbose : bool
         Print slice summary.
 
@@ -110,7 +142,17 @@ def select_slice(mol, slice_name, filter_z0=True, verbose=True):
     mol_slice : DataFrame
         Filtered molecules with added ``x_local``, ``y_local`` columns.
     """
-    mol_slice = mol[mol["matched_h5ad_file"] == slice_name].copy()
+    policy = policy or MERFISH_INPUT
+    if policy == "section":
+        mol_slice = mol[section_rows(mol, slice_name)].copy()
+        if filter_z0 is None:
+            filter_z0 = False
+    elif policy == "annotated_z0":
+        mol_slice = mol[mol["matched_h5ad_file"] == slice_name].copy()
+        if filter_z0 is None:
+            filter_z0 = True
+    else:
+        raise ValueError(f"unknown MERFISH input policy {policy!r}")
     mol_slice["x_local"] = mol_slice["x"] - mol_slice["x"].min()
     mol_slice["y_local"] = mol_slice["y"] - mol_slice["y"].min()
 

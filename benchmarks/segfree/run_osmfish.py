@@ -47,14 +47,27 @@ def load():
     return o, om.gene.values, mol_um, cell_um, gt
 
 
+#: Cell-type clustering variants swept as part of SSAM's grid, as on MERFISH
+#: (Methods, SSAM). SSAM 1.1.3 under-resolves at the published Louvain
+#: resolution, so the resolution is treated as a hyperparameter and the paper's
+#: sctransform normalisation is restored. SSAM_RESOLUTIONS="0.15 4 8".
+SSAM_RESOLUTIONS = [float(v) for v in os.environ.get("SSAM_RESOLUTIONS", "0.15").split()]
+SSAM_NORMALIZATION = os.environ.get("SSAM_NORMALIZATION", "builtin")
+SSAM_OUTLIER = None if os.environ.get("SSAM_OUTLIER", "on") == "off" else "medoid-correlation"
+#: 1 = stop after the binned cell-type maps and export the store, so that the
+#: domain sweep can run elsewhere (ssam_sweep_offline.py --dataset osmfish).
+PIPELINE_ONLY = os.environ.get("SSAM_PIPELINE_ONLY", "") == "1"
+
+
 def run_ssam(genes, mol_um, cell_um, gt):
     import ssam
     x0, y0 = mol_um[:, 0].min() - 10.0, mol_um[:, 1].min() - 10.0
     loc = pd.DataFrame({"gene": genes, "x": mol_um[:, 0] - x0, "y": mol_um[:, 1] - y0})
     width = float(np.ceil(loc.x.max() + 10))
     height = float(np.ceil(loc.y.max() + 10))
-    ds = ssam.SSAMDataset(store="work/ssam_osmfish.zarr")
-    an = ssam.SSAMAnalysis(ds, ncores=20, verbose=False)
+    store_path = "work/ssam_osmfish.zarr"
+    ds = ssam.SSAMDataset(store=store_path)
+    an = ssam.SSAMAnalysis(ds, ncores=int(os.environ.get("SSAM_NCORES", "20")), verbose=False)
     err = io.StringIO()
     timings = {}
     with contextlib.redirect_stderr(err):
@@ -65,24 +78,35 @@ def run_ssam(genes, mol_um, cell_um, gt):
         an.set_thresholds(expression_threshold=0.027, norm_threshold=0.04)
         t = time.time()
         an.find_localmax(search_size=3)
-        an.normalize_vectors()
+        if SSAM_NORMALIZATION == "sctransform":
+            from benchmarks.segfree.sctransform_csv import ssam_use_csv_sctransform
+            ssam_use_csv_sctransform()
+            an.normalize_vectors_sctransform()
+        else:
+            an.normalize_vectors()
         an.scale_vectors()
-        an.cluster_vectors(method="louvain", pca_dims=33, resolution=0.15,
-                           max_correlation=1.0, metric="correlation",
-                           centroid_correction_threshold=0.6, random_state=0)
-        timings["cluster"] = time.time() - t
-        t = time.time()
-        an.map_celltypes()
-        an.filter_celltypemaps(min_norm="local",
-                               filter_params={"block_size": 151, "method": "mean",
-                                              "mode": "constant", "offset": 0.2},
-                               min_r=0.6, min_blob_area=50, fill_blobs=True)
-        an.bin_celltypemaps(step=10, radius=100)
-        timings["celltype_map"] = time.time() - t
 
-    out = {"n_localmax": int(np.asarray(ds.local_maxs).shape[1]),
-           "n_celltypes": int(len(np.unique(np.asarray(ds.cluster_labels)[np.asarray(ds.cluster_labels) >= 0]))),
-           "timings": timings, "runs": []}
+    def cluster_at(resolution):
+        """Cell types at one Louvain resolution, carried through to binned maps."""
+        t0 = time.time()
+        with contextlib.redirect_stderr(err):
+            an.cluster_vectors(method="louvain", pca_dims=33, resolution=resolution,
+                               max_correlation=1.0, metric="correlation",
+                               centroid_correction_threshold=0.6, random_state=0,
+                               outlier_detection_method=SSAM_OUTLIER)
+            an.map_celltypes()
+            an.filter_celltypemaps(min_norm="local",
+                                   filter_params={"block_size": 151, "method": "mean",
+                                                  "mode": "constant", "offset": 0.2},
+                                   min_r=0.6, min_blob_area=50, fill_blobs=True)
+            an.bin_celltypemaps(step=10, radius=100)
+        lab = np.asarray(ds.cluster_labels)
+        return int(len(np.unique(lab[lab >= 0]))), time.time() - t0
+
+    if True:
+        out = {"n_localmax": int(np.asarray(ds.local_maxs).shape[1]),
+               "normalization": SSAM_NORMALIZATION, "outlier_detection": SSAM_OUTLIER,
+               "timings": timings, "runs": []}
 
     def evaluate(kw, name, save=False):
         with contextlib.redirect_stderr(err):
@@ -99,19 +123,40 @@ def run_ssam(genes, mol_um, cell_um, gt):
         return m
 
     pub = dict(n_clusters=15, merge_remote=False, merge_thres=0.6, norm_thres=4500)
-    out["published"] = evaluate(pub, "published", save=True)
-    print(f"[ssam osmfish published] ARI={out['published']['ARI']:.3f} "
-          f"NMI={out['published']['NMI']:.3f} k={out['published']['n_pred_domains']}", flush=True)
     sweep = [dict(n_clusters=n, merge_remote=rm, merge_thres=t, norm_thres=nt)
              for n in (11, 15, 20) for t in (0.6, 0.7, 0.8) for rm in (False, True)
              for nt in (1500, 4500)]
-    out["sweep"] = [evaluate(kw, "sweep") for kw in sweep]
-    best = max(out["sweep"], key=lambda r: r["ARI"])
-    out["best_sweep"] = evaluate(best["params"], "best_sweep", save=True)
-    print(f"[ssam osmfish best] ARI={best['ARI']:.3f} NMI={best['NMI']:.3f} "
-          f"k={best['n_pred_domains']} params={best['params']}", flush=True)
-    with open(f"{OUT}/metrics_ssam.json", "w") as f:
-        json.dump(out, f, indent=1)
+    for resolution in SSAM_RESOLUTIONS:
+        n_ct, dt = cluster_at(resolution)
+        rtag = "" if resolution == 0.15 and len(SSAM_RESOLUTIONS) == 1 else f"_r{resolution:g}"
+        if PIPELINE_ONLY:
+            from benchmarks.segfree import ssam_domains as sd
+            st = sd.load_store(store_path)
+            np.savez_compressed(
+                f"{OUT}/store_osmfish{rtag}.npz", binned=st["binned"],
+                vf_norm_shape=np.array(st["vf_norm_shape"]), filtered=st["filtered"],
+                cell_xy=cell_um, gt=np.asarray(gt, dtype=str),
+                cell_names=np.asarray([f"cell_{i}" for i in range(len(cell_um))], dtype=str),
+                x0=x0, y0=y0, n_molecules=len(loc), n_celltypes=n_ct,
+                n_localmax=out["n_localmax"],
+                timings=json.dumps(dict(resolution=resolution, cluster=dt)))
+            print(f"[ssam osmfish{rtag}] {n_ct} cell types ({dt:.0f} s) -> store_osmfish{rtag}.npz", flush=True)
+            continue
+        o = dict(out)
+        o["n_celltypes"] = n_ct
+        o["resolution"] = resolution
+        o["timings"] = dict(timings, cluster=dt)
+        print(f"[ssam osmfish{rtag}] resolution {resolution:g}: {n_ct} cell types ({dt:.0f} s)", flush=True)
+        o["published"] = evaluate(pub, f"published{rtag}", save=True)
+        print(f"[ssam osmfish{rtag} published] ARI={o['published']['ARI']:.3f} "
+              f"NMI={o['published']['NMI']:.3f} k={o['published']['n_pred_domains']}", flush=True)
+        o["sweep"] = [evaluate(kw, "sweep") for kw in sweep]
+        best = max(o["sweep"], key=lambda r: r["ARI"])
+        o["best_sweep"] = evaluate(best["params"], f"best_sweep{rtag}", save=True)
+        print(f"[ssam osmfish{rtag} best] ARI={best['ARI']:.3f} NMI={best['NMI']:.3f} "
+              f"k={best['n_pred_domains']} params={best['params']}", flush=True)
+        with open(f"{OUT}/metrics_ssam{rtag}.json", "w") as f:
+            json.dump(o, f, indent=1)
 
 
 def run_p2r(genes, mol_um, cell_um, gt):

@@ -32,6 +32,10 @@ INCLUDE = re.compile(r"\\includegraphics(?:\[([^\]]*)\])?\{([^}]+)\}")
 WIDTH_FRAC = re.compile(r"width\s*=\s*([0-9.]*)\s*\\(?:linewidth|textwidth|columnwidth)")
 WIDTH_ABS = re.compile(r"width\s*=\s*([0-9.]+)\s*(mm|cm|in|pt)")
 GRAPHICSPATH = re.compile(r"\\graphicspath\{(.+?)\}\s*$", re.M)
+#: \figfull{...} places a figure at its drawn width, overflowing the narrow
+#: text block. It carries no [width=...], so without this the audit reads the
+#: macro definition instead and reports every figure as missing.
+FIGFULL = re.compile(r"\\figfull\{([^}#]+)\}")
 
 _UNIT_MM = {"mm": 1.0, "cm": 10.0, "in": 25.4, "pt": 25.4 / 72.0}
 
@@ -74,8 +78,14 @@ def audit(tex: Path, base_mm: float, min_dpi: float = MIN_DPI) -> list[dict]:
 
     dirs = graphics_dirs(tex)
     rows, seen = [], set()
-    for opts, name in INCLUDE.findall(tex.read_text()):
-        if name in seen:
+    text = tex.read_text()
+    found = list(INCLUDE.findall(text))
+    found += [(f"width={SUBMISSION_WIDTH_MM:g}mm", n)
+              for n in FIGFULL.findall(text)]
+    for opts, name in found:
+        # \newcommand bodies contain \includegraphics{#1}; that is the macro's
+        # parameter, not a file
+        if "#" in name or name in seen:
             continue
         seen.add(name)
         placed = placed_width_mm(opts, base_mm)

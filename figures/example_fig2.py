@@ -89,7 +89,8 @@ def panel_b(path):
     ax.set_xlim(0.45, 0.60)
     ax.set_xlabel("ARI")
     ax.axvline(0.496, color="#666666", lw=0.5, ls=(0, (2, 2)))
-    ax.text(0.4975, 0.15, "no weighting", fontsize=4, color="#666666",
+    ax.text(0.4975, 0.15, "no weighting", fontsize=ss.TYPE_PT["small"]["tick"],
+            color="#666666",
             va="bottom", ha="left")
     ss.save_panel(fig, path)
 

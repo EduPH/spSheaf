@@ -1,6 +1,8 @@
 # Built artefacts: figures are reproducible from `make figures`.
 panels/
 *.png
+# ...except the legacy rasters the Extended Data composites place: inputs, not outputs
+!assets/*.png
 fig*.pdf
 __pycache__/
 .pytest_cache/

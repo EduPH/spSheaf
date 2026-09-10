@@ -41,7 +41,7 @@ ALPHAS = [0.0, 0.25, 0.5, 0.75]
 FOCUS = {
     "Layer 3-4":         ("#C1541A", "resolution limit"),
     "Layer 2-3 lateral": ("#0072B2", "expression-degenerate"),
-    "Pia Layer 1":       ("#00795C", "compactness bias"),
+    "Layer 4":           ("#00795C", "lost to position at 0.75"),
 }
 OTHER = "#B6C0CA"
 TICK = ss.TYPE_PT["normal"]["tick"]
@@ -58,19 +58,27 @@ def load():
     return rows
 
 
+def signed(x, places=2):
+    """A signed number for mathtext, with the sign braced.
+
+    Mathtext reads a leading ``+`` or ``-`` as a binary operator and pads it,
+    so ``$\\rho=+0.32$`` renders as "rho = + 0.32" on some matplotlib
+    versions and "rho = +0.32" on others -- the figure then depends on whose
+    machine built it. Bracing the sign makes it an ordinary symbol everywhere.
+    """
+    sign = "+" if x >= 0 else "-"
+    return f"{{{sign}}}{abs(x):.{places}f}"
+
+
 def spearman(xs, ys):
-    def rank(v):
-        order = sorted(range(len(v)), key=lambda i: v[i])
-        r = [0.0] * len(v)
-        for pos, i in enumerate(order):
-            r[i] = pos + 1.0
-        return r
-    rx, ry = rank(xs), rank(ys)
-    n = len(xs)
-    mx, my = sum(rx) / n, sum(ry) / n
-    num = sum((a - mx) * (b - my) for a, b in zip(rx, ry))
-    den = (sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry)) ** 0.5
-    return num / den if den else float("nan")
+    """Spearman's rank correlation with tie-averaged ranks.
+
+    Recall has ties (two domains at exactly 0.00), and a rank that does not
+    average ties gives +0.32 where ``scipy.stats.spearmanr`` -- which is what
+    the text and ``experiments/osmfish`` report -- gives +0.34. Use scipy.
+    """
+    from scipy.stats import spearmanr
+    return float(spearmanr(xs, ys).correlation)
 
 
 def panel_a(rows, path):
@@ -81,7 +89,7 @@ def panel_a(rows, path):
         if r["domain"] in FOCUS:
             continue
         ax.plot(ALPHAS, r["recall"], color=OTHER, lw=0.7, zorder=1)
-    dy = {"Layer 3-4": -4.0, "Layer 2-3 lateral": 0.0, "Pia Layer 1": 4.0}
+    dy = {"Layer 3-4": -4.0, "Layer 2-3 lateral": 5.0, "Layer 4": -5.0}
     for r in rows:
         d = r["domain"]
         if d not in FOCUS:
@@ -91,7 +99,9 @@ def panel_a(rows, path):
         ax.annotate(d, (ALPHAS[-1], r["recall"][-1]), xytext=(6, dy[d]),
                     textcoords="offset points", color=c, fontsize=TICK, va="center")
     ax.axvline(0.5, color="#555555", lw=0.5, ls=(0, (2, 2)))
-    ax.text(0.5, 1.03, "published", fontsize=4, color="#555555", ha="center")
+    ax.text(0.5, 0.97, "default", fontsize=ss.TYPE_PT["small"]["tick"],
+            color="#555555", ha="center", va="top",
+            bbox=dict(facecolor="white", edgecolor="none", pad=0.4))
     ax.set_xticks(ALPHAS)
     ax.set_xlim(-0.04, 0.79)
     ax.set_ylim(-0.05, 1.0)
@@ -103,7 +113,7 @@ def panel_a(rows, path):
 def panel_b(rows, path):
     """Uncontaminated interior width."""
     fig, ax = ss.panel(84, 52)
-    fig.subplots_adjust(left=0.42, right=0.97, top=0.96, bottom=0.15)
+    fig.subplots_adjust(left=0.47, right=0.97, top=0.96, bottom=0.15)
     rs = sorted(rows, key=lambda r: r["width_um"])
     for i, r in enumerate(rs):
         c = FOCUS.get(r["domain"], (OTHER, None))[0]
@@ -127,7 +137,8 @@ def panel_c(rows, path):
         rec = [r["recall"][k] for r in rows]
         ax.scatter(el, rec, s=9, marker=marker, facecolor="none",
                    edgecolor=shade, linewidths=0.7,
-                   label=rf"$\alpha_s={alpha:g}$   $\rho={spearman(el, rec):+.2f}$")
+                   label=rf"$\alpha_s={alpha:g}$   "
+                         rf"$\rho={signed(spearman(el, rec))}$")
     ax.set_xlabel("domain elongation (PCA aspect ratio)")
     ax.set_ylabel("recall")
     ax.set_ylim(-0.05, 1.0)

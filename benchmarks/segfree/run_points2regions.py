@@ -117,7 +117,7 @@ def run_slice(slice_id, molecules):
 
 if __name__ == "__main__":
     slices = sys.argv[1:] or bc.MER_SLICES
-    molecules = pd.read_csv(bc.MER_MOL)
+    molecules = bc.load_merfish_export()
     print(f"loaded {len(molecules):,} molecules", flush=True)
     for s in slices:
         run_slice(s, molecules)

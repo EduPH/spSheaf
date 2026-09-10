@@ -77,6 +77,21 @@ def load_osmfish_molecules(hdf5_path):
     return mol
 
 
+REGISTRATION_FILE = "registration.json"
+
+
+def registration_translation():
+    """Translation (px) taking AnnData cell coordinates into the molecule grid
+    frame, as fitted label-free by ``experiments.osmfish.register``; ``None``
+    if it has not been fitted yet."""
+    import json
+    from spsheaf import paths
+    f = paths.results("osmfish") / REGISTRATION_FILE
+    if not f.exists():
+        return None
+    return np.asarray(json.loads(f.read_text())["translation"], dtype=float)
+
+
 def load_cell_ground_truth(h5ad_path):
     """Load cell centroids and ground-truth labels from AnnData."""
     adata = ad.read_h5ad(h5ad_path)
@@ -123,10 +138,21 @@ def evaluate_at_cell_level(grid_coords, grid_labels,
     gt_names : list of str
         Domain name in label-index order.
     """
-    # Align cell centroids to the grid coordinate frame
-    grid_center = grid_coords.mean(axis=0)
-    cell_center = cell_coords.mean(axis=0)
-    cell_coords_aligned = cell_coords + (grid_center - cell_center)
+    # Align cell centroids to the grid coordinate frame. The annotation and
+    # the molecule table are in different frames; the translation between
+    # them is recovered WITHOUT the labels by experiments/osmfish/register.py
+    # (composition correlation, as benchmarks/segfree/osm_register.py does for
+    # the competitors) and stored under data/results/osmfish/. Matching the two
+    # centroids -- the fallback -- is biased by ~130 um, because the molecule
+    # cloud extends beyond the annotated cells asymmetrically; it depressed the
+    # published osmFISH score from 0.619 to 0.538 ARI.
+    translation = registration_translation()
+    if translation is None:
+        warnings.warn("osmFISH registration not found; falling back to centroid "
+                      "alignment, which is biased by ~130 um. Run "
+                      "python -m experiments.osmfish.register", stacklevel=2)
+        translation = grid_coords.mean(axis=0) - cell_coords.mean(axis=0)
+    cell_coords_aligned = cell_coords + translation
 
     # Each cell → nearest grid point → predicted label
     tree = cKDTree(grid_coords)

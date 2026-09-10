@@ -3,7 +3,7 @@
 The experiment scripts have historically drawn their own results: matplotlib
 defaults, frames on spatial panels, titles inside the axes, type at whatever
 size ``tight_layout`` produced. The manuscript figures are built in
-``figures/`` against a written specification -- 180 mm canvas, 6/8/10 pt type,
+``figures/`` against a written specification -- 180 mm canvas, 6/7/8 pt type,
 no frames on spatial panels, 300 dpi floor -- and composed by ``layout.py``.
 
 The way to reconcile the two is not to restyle the experiment scripts. It is

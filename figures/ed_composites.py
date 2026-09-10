@@ -122,38 +122,62 @@ def ed_methodval() -> Layout:
 
 
 def ed_dnaterr() -> Layout:
-    """a territories; b chromosome-by-zone heatmap; c cross-nucleus NMI.
-
-    a and b sit side by side rather than stacked: a three-panel stack ran to
-    221 mm, taller than the text block, and 108 mm put a at 214 dpi. At 77 mm
-    it clears the print floor and the figure fits the page.
-    """
+    """a territories; b chromosome-by-zone heatmap; c cross-nucleus NMI;
+    d one nucleus as optical sections and orthogonal slabs, drawn from its
+    zone table at the type specification."""
+    from ed_nucleus_panels import nucleus_row
+    from spsheaf import paths
     name = "ed_dnaterr"
-    pa, ha = place(name, "dna_territories.png", 77.0)
-    pb, hb = place(name, "dna_zone_chromosome.png", 95.0)
-    pc, hc = place(name, "dna_zone_nmi.png", 68.0)
-    xs = row([77.0, 95.0], W, margin=3.0)
-    y2 = TOP + max(ha, hb) + GAP + 5.0
-    total = y2 + hc + 4.0
+    pa, ha = place(name, "dna_territories.png", 66.0)
+    pb, hb = place(name, "dna_zone_chromosome.png", 98.0)
+    pc, hc = place(name, "dna_zone_nmi.png", 52.0)
+    pd_ = PANELS / "ed_dnaterr_nucleus.pdf"
+    hd = nucleus_row(paths.results("takei") / "output_takei" / "nucleus_0_13_zones.csv",
+                     pd_, width_mm=W - 12.0)
+    xa, xb = 6.0, W - 6.0 - 98.0
+    yc = TOP + hb + GAP
+    row1 = max(ha, hb + GAP + hc)
+    y3 = TOP + row1 + GAP + 2.0
+    total = y3 + hd + 3.0
     return Layout(
         name=name, width_mm=W, height_mm=total,
         panels=[
-            Panel("a", pa, xs[0], TOP, label_dx=-4, label_dy=-5),
-            Panel("b", pb, xs[1], TOP, label_dx=-4, label_dy=-5),
-            Panel("c", pc, (W - 68.0) / 2, y2, label_dx=-4, label_dy=-5),
+            Panel("a", pa, xa, TOP, label_dx=-4, label_dy=-5),
+            Panel("b", pb, xb, TOP, label_dx=-4, label_dy=-5),
+            Panel("c", pc, xb, yc, label_dx=-4, label_dy=-5),
+            Panel("d", pd_, 6.0, y3, label_dx=-4, label_dy=-3),
         ],
     )
 
 
 def ed_ifheat() -> Layout:
-    # 167 mm rather than 171: at 171 the heatmap lands at 293 dpi.
-    return build("ed_ifheat", [
-        ("a", "if_certification.png", 140.0, 6.0),
-        ("b", "if_zone_mark_heatmap.png", 166.0, 6.0),
-    ])
+    """a radial certification; b archetype x mark heatmap, both centred;
+    c one nucleus as sections and slabs, drawn from its zone table."""
+    from ed_nucleus_panels import nucleus_row
+    from spsheaf import paths
+    name = "ed_ifheat"
+    pa, ha = place(name, "if_certification.png", 100.0)
+    pb, hb = place(name, "if_zone_mark_heatmap.png", 130.0)
+    pc = PANELS / "ed_ifheat_nucleus.pdf"
+    hc = nucleus_row(paths.results("takei") / "output_takei_if" / "nucleus_13_zones.csv",
+                     pc, width_mm=W - 12.0)
+    ya = TOP
+    yb = ya + ha + GAP + 2.0
+    yc = yb + hb + GAP + 2.0
+    total = yc + hc + 3.0
+    return Layout(
+        name=name, width_mm=W, height_mm=total,
+        panels=[
+            Panel("a", pa, (W - 100.0) / 2, ya, label_dx=-4, label_dy=-5),
+            Panel("b", pb, (W - 130.0) / 2, yb, label_dx=-4, label_dy=-5),
+            Panel("c", pc, 6.0, yc, label_dx=-4, label_dy=-3),
+        ],
+    )
 
 
-BUILDERS = [ed_scale, ed_merfishslices, ed_methodval, ed_dnaterr, ed_ifheat]
+#: ed_scale is now drawn from data by ed_scale.py (its Stereo-seq panel is
+#: still a placed raster); the builder above is kept for reference.
+BUILDERS = [ed_merfishslices, ed_methodval, ed_dnaterr, ed_ifheat]
 
 
 def main():

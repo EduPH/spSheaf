@@ -72,8 +72,11 @@ def test_default_style_hides_top_and_right_spines():
 
 
 def test_type_registers_differ():
-    assert ss.TYPE_PT["normal"] == {"tick": 6.0, "text": 8.0, "label": 10.0}
-    assert ss.TYPE_PT["small"] == {"tick": 4.0, "text": 6.0, "label": 8.0}
+    # Nature: all figure text 5-7 pt at final size, panel letters 8 pt bold.
+    assert ss.TYPE_PT["normal"] == {"tick": 6.0, "text": 7.0, "label": 8.0}
+    assert ss.TYPE_PT["small"] == {"tick": 5.0, "text": 6.0, "label": 8.0}
+    assert min(ss.ALLOWED_PT) >= ss.MIN_PT
+    assert max(v["text"] for v in ss.TYPE_PT.values()) <= 7.0
 
 
 def test_method_colors_are_stable():
@@ -129,7 +132,7 @@ def test_panel_labels_are_at_the_label_size(tmp_path):
     lay = Layout("t", 180, 60, [Panel("a", a, 2, 5)])
     out = lay.compose(tmp_path / "fig.pdf")
     _, report = verify(out, width_mm=180)
-    assert "10" in report["type_sizes_pt"]
+    assert "8" in report["type_sizes_pt"]
 
 
 # --- verifier ---------------------------------------------------------------
@@ -144,15 +147,15 @@ def test_verifier_catches_wrong_canvas_width(tmp_path):
 
 def test_verifier_catches_off_spec_type(tmp_path):
     fig, ax = ss.panel(80, 50)
-    # 7 pt is not in the spec. It is also exactly 10 x 0.7, so this test
-    # pins that the mathtext exemption does not extend to the label size.
-    ax.set_xlabel("off spec", fontsize=7)
+    # 9 pt is not in the spec. It is also not 0.7 of any permitted size, so
+    # the mathtext exemption cannot excuse it either.
+    ax.set_xlabel("off spec", fontsize=9)
     p = tmp_path / "a.pdf"
     ss.save_panel(fig, p)
     lay = Layout("t", 180, 60, [Panel(None, p, 2, 5)])
     out = lay.compose(tmp_path / "fig.pdf")
     failures, _ = verify(out, width_mm=180)
-    assert any("7 pt" in f for f in failures)
+    assert any("9 pt" in f for f in failures)
 
 
 def test_verifier_measures_rotated_labels_correctly(tmp_path):
@@ -170,7 +173,7 @@ def test_verifier_measures_rotated_labels_correctly(tmp_path):
 
 
 def test_verifier_accepts_mathtext_subscripts(tmp_path):
-    # `$\\alpha_s$` in an 8 pt label emits a 5.6 pt glyph. That is typesetting,
+    # `$\\alpha_s$` in a 7 pt label emits a 4.9 pt glyph. That is typesetting,
     # not a violation.
     fig, ax = ss.panel(80, 50)
     ax.set_xlabel(r"spatial weight $\alpha_s$")
@@ -180,7 +183,7 @@ def test_verifier_accepts_mathtext_subscripts(tmp_path):
     out = lay.compose(tmp_path / "fig.pdf")
     failures, report = verify(out, width_mm=180)
     assert failures == [], failures
-    assert "5.6" in report["type_sizes_pt"]
+    assert "4.9" in report["type_sizes_pt"]
 
 
 def test_verifier_still_catches_type_below_the_floor(tmp_path):

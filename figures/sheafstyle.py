@@ -6,15 +6,20 @@ in the printed figure if nothing between here and the page multiplies it. That
 is why :func:`save_panel` refuses ``bbox_inches="tight"`` -- it silently changes
 the output size, which changes every type size in the figure by the same factor.
 
-Type registers (from the collaborator's specification):
+Type registers, set to Nature's artwork guide (all figure text 5-7 pt at
+final size; panel letters 8 pt bold):
 
 ============  ========  =======
 element       normal    small
 ============  ========  =======
-tick labels   6 pt      4 pt
-other text    8 pt      6 pt
-panel labels  10 pt     8 pt
+tick labels   6 pt      5 pt
+other text    7 pt      6 pt
+panel labels  8 pt      8 pt
 ============  ========  =======
+
+These hold only if the figure reaches the page at the width it was drawn at.
+A 180 mm figure placed in a 131 mm text block is scaled to 73%, and every
+size above is then a quarter smaller than it says.
 
 Canvas widths are Nature's column widths in mm. The default is ``double``
 (180 mm), which is the width the manuscript's main figures are typeset at, so
@@ -60,10 +65,19 @@ MM_PER_IN = 25.4
 WIDTHS_MM = {"single": 88.0, "onehalf": 120.0, "double": 180.0}
 
 #: Type sizes in points, by register.
+#:
+#: Nature's artwork guide puts *all* figure text between 5 and 7 pt at final
+#: size, with panel letters at 8 pt bold. The earlier scale (6/8/10, and 4 pt
+#: in the small register) sat outside that at both ends: 8 and 10 pt above the
+#: maximum, 4 pt below the minimum and genuinely illegible. These are the
+#: sizes the figures are actually published at, so they are the ones to hold.
 TYPE_PT = {
-    "normal": {"tick": 6.0, "text": 8.0, "label": 10.0},
-    "small": {"tick": 4.0, "text": 6.0, "label": 8.0},
+    "normal": {"tick": 6.0, "text": 7.0, "label": 8.0},
+    "small": {"tick": 5.0, "text": 6.0, "label": 8.0},
 }
+
+#: Nature's stated floor. Nothing but a mathtext sub/superscript may go below.
+MIN_PT = 5.0
 
 #: The set of sizes the verifier will accept in a composed figure.
 ALLOWED_PT = sorted({v for reg in TYPE_PT.values() for v in reg.values()})
@@ -105,7 +119,7 @@ def apply(register: str = "normal", *, raster_dpi: int = 600) -> None:
     Parameters
     ----------
     register:
-        ``"normal"`` (6/8/10 pt) or ``"small"`` (4/6/8 pt).
+        ``"normal"`` (6/7/8 pt) or ``"small"`` (5/6/8 pt).
     raster_dpi:
         Resolution used for artists marked with :func:`rasterize`. Text and
         axes stay vector regardless. 600 leaves headroom above the journal's

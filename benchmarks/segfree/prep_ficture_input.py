@@ -2,6 +2,7 @@
 
 Run as: python prep_ficture_input.py merfish [slice ...]
         python prep_ficture_input.py osmfish
+        python prep_ficture_input.py spacetx <dataset>   (e.g. MERFISH_Allen_Prototype)
 
 FICTURE needs three files per dataset:
   transcripts.tsv.gz     X, Y, gene, Count  -- sorted along the major axis
@@ -65,7 +66,7 @@ def write_dataset(name, x_um, y_um, genes, cell_xy_um=None, extra=None):
 
 
 def prep_merfish(slices):
-    molecules = pd.read_csv(bc.MER_MOL)
+    molecules = bc.load_merfish_export()
     for s in slices:
         adata, mols = bc.load_merfish_slice(s, molecules=molecules)
         gt = adata.obs["domain"].astype(str).values
@@ -87,11 +88,31 @@ def prep_osmfish():
     pd.DataFrame({"cell": o.obs_names, "gt": gt}).to_csv(f"{d}/ground_truth.csv", index=False)
 
 
+def prep_spacetx(dataset, spot_x="xc", spot_y="yc", spot_gene="gene",
+                 cell_x="rotated_x", cell_y="rotated_y", label="layer", unit_um=1.0):
+    """Same frame and registration as benchmarks/segfree/run_spacetx.py."""
+    root = _paths.raw("spacetx") / dataset
+    spots = pd.read_csv(root / "s3_spot_table.csv", usecols=[spot_x, spot_y, spot_gene])
+    cells = pd.read_csv(root / "s3_mapped_cell_table.csv")
+    mol = np.c_[spots[spot_x].values, spots[spot_y].values] * unit_um
+    cxy = cells[[cell_x, cell_y]].values * unit_um
+    meta = _paths.results("spacetx") / dataset / "panels" / "spsheaf.json"
+    if meta.exists():
+        t = np.asarray(json.loads(meta.read_text())["registration"]["translation"], dtype=float)
+        cxy = cxy + t + mol.min(0)
+    gt = cells[label].astype(str).values
+    d = write_dataset(f"spacetx_{dataset}", mol[:, 0], mol[:, 1], spots[spot_gene].astype(str).values,
+                      cell_xy_um=cxy, extra={"n_gt_domains": int(len(set(gt)))})
+    pd.DataFrame({"cell": cells.index, "gt": gt}).to_csv(f"{d}/ground_truth.csv", index=False)
+
+
 if __name__ == "__main__":
     which = sys.argv[1] if len(sys.argv) > 1 else "merfish"
     if which == "merfish":
         prep_merfish(sys.argv[2:] or bc.MER_SLICES)
     elif which == "osmfish":
         prep_osmfish()
+    elif which == "spacetx":
+        prep_spacetx(sys.argv[2] if len(sys.argv) > 2 else "MERFISH_Allen_Prototype")
     else:
-        raise SystemExit("usage: prep_ficture_input.py {merfish|osmfish} [slice ...]")
+        raise SystemExit("usage: prep_ficture_input.py {merfish|osmfish|spacetx <dataset>} [slice ...]")
