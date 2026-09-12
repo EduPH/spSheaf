@@ -1,0 +1,2 @@
+n_nuclei,mean_r_radius_periph,sd_r_radius_periph,n_positive_periph,mean_r_radius_interior,n_negative_interior,frac_periphmost_is_hetero,pooled_r_radius_periph
+46,0.716,0.158,46,-0.162,31,0.978,0.701

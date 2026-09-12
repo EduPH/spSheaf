@@ -9,6 +9,71 @@ publishes a per-molecule `spot_table.csv` for each, alongside cell tables.
 Cortical layers are the natural domain annotation, and SDMBench's Data22–24
 are SpaceTx datasets, so published baseline scores exist.
 
+## Current state (11 Sep 2026) — read this before the dated entries below
+
+Both sections are in the manuscript as Table 2 columns and as ED Fig. 6. The
+dated sections further down are a working log and several of their numbers have
+been superseded; where they disagree with this section, this section is right.
+
+What changed after the entries below were written: the grids were re-matched to
+the competitors' search budgets, and the coordinate reference was added to the
+sweep. Both mattered. SSAM's own in-sample grid here is 287–288 settings
+(resolution treated as the hyperparameter it is, plus the sctransform variants),
+against the 71 recorded below, and spSheaf's was 12–18. Under that asymmetry
+spSheaf was being selected from a grid an order of magnitude smaller than the
+method it was compared with, which is not a fair comparison in either direction.
+
+The matched grid is 162 configurations per section, run by
+`make spacetx-insample-grid`:
+
+| parameter | levels |
+|---|---|
+| coordinate reference | local, tissue |
+| kernel bandwidth `h` | 25, 40, 60 µm |
+| smoothing radius `σ_s` | 60, 120, 180 µm |
+| spatial weight `α_s` | 0.25, 0.5, 0.75 |
+| stalk dimension `d` | 4, 6, 9 |
+| boundary strength `α_b` | 0.5 (fixed) |
+
+ARI against the layer annotation, Hungarian-matched:
+
+| section | spSheaf transferred | spSheaf in-sample (of 162) | best competitor, in-sample |
+|---|---|---|---|
+| Allen prototype MERFISH | 0.541 | **0.754** | 0.684 (Points2Regions, of 24) |
+| BaristaSeq | 0.713 | **0.757** | 0.738 (SSAM, of 288) |
+
+The in-sample argmax is the tissue reference on both sections, at `h` 40 µm:
+σ_s 120, d 6, α_s 0.25 on Allen; σ_s 180, d 9, α_s 0.5 on BaristaSeq.
+
+The surprise is which parameter dominates. It is not the bandwidth, as the
+"Bandwidth rule" section below concluded from the 12-setting grid — it is the
+coordinate reference, which moves mean ARI by 0.132 on Allen and 0.102 on
+BaristaSeq against 0.036 and 0.081 for the bandwidth. The stalk dimension moves
+it by 0.010 and 0.004, i.e. not at all. ED Fig. 5 draws all of this
+(`figures/ed_sensitivity.py`); read its marginals only over balanced blocks,
+which that script enforces, because an unbalanced marginal on a resumable grid
+reads whatever order the configurations happened to finish in.
+
+We have no label-free rule that picks the reference or σ_s across all four
+datasets, so both are fixed on MERFISH and transferred, and the sensitivity is
+reported rather than used. That is why there are two spSheaf rows in Table 2.
+
+Reproducing, in order:
+
+```bash
+make spacetx SPACETX=MERFISH_Allen_Prototype     # the transferred configuration
+make spacetx SPACETX=BARISTASeq
+make spacetx-segfree SPACETX=...                 # SSAM + Points2Regions
+make spacetx-insample-grid                       # the 162 configurations, resumable
+make spacetx-insample-panels                     # re-run each at its own argmax, for the figure
+cd figures && python ed_spacetx.py
+```
+
+`spacetx-insample-panels` reads the argmax out of `sweep.csv` rather than
+taking it as an argument, so the figure and Table 2 cannot disagree; it writes
+`spacetx/<ds>/panels/spsheaf_insample.{npz,json}`. The grid tables are archived
+under `reported/spacetx/` so ED Fig. 5 builds without them.
+
 ## Step 1 — download (needs a network; run from a terminal on your Mac)
 
 ```bash
@@ -99,8 +164,8 @@ coordinates only 0.198 ± 0.002, expression only 0.347 ± 0.028, concatenated
 
 Points2Regions is strong on this clean layer stack: 11 of its 24 settings beat
 spSheaf's transferred default, and its grid median is 0.510. spSheaf's grid
-(`sweep.py`; h ∈ {25, 40}, α_s ∈ {0.25, 0.5, 0.75}, σ_s ∈ {60, 120}; h = 60
-pending, slow) is bimodal in the bandwidth: every h = 25 setting is 0.55–0.58,
+(`sweep.py` as it then stood; h ∈ {25, 40}, α_s ∈ {0.25, 0.5, 0.75},
+σ_s ∈ {60, 120} — 12 settings, superseded by the 162 above) is bimodal in the bandwidth: every h = 25 setting is 0.55–0.58,
 every h = 40 setting with α_s ≤ 0.5 is 0.740–0.753, so the in-sample bound is
 not a lucky corner but the bandwidth. Under the symmetric in-sample rule
 spSheaf leads Points2Regions by 0.07 ARI / 0.05 NMI; under transfer-vs-tuned it
@@ -110,8 +175,10 @@ types; `norm_thres` 300–1000) is far behind either.
 Installing SSAM (its build needs numpy present and a current setuptools):
 `python -m venv env && . env/bin/activate && pip install -U pip setuptools wheel && pip install numpy cython && pip install --no-build-isolation ssam louvain "setuptools<81"`.
 
-Not yet done: FICTURE; h = 60 rows of the grid; BaristaSeq and the other three
-SpaceTx datasets; a label-free bandwidth rule. (An earlier note here said the
+Not yet done, as of that entry: FICTURE; h = 60 rows of the grid; BaristaSeq.
+All three are done — see the current-state section at the top. Still open: a
+label-free rule for the reference and σ_s, and the other three SpaceTx
+platforms. (An earlier note here said the
 per-gene density is ~4x lower than Moffitt MERFISH; it is the reverse — see
 "Bandwidth rule" below.)
 
@@ -210,7 +277,7 @@ sheaf field, spSheaf transferred, competitors at their best in-sample setting,
 Hungarian-matched) plus the Allen in-sample run at h = 40. It needs
 `make spacetx-ficture-labels SPACETX=<ds>` (writes `labels_ficture_best.csv`
 by reproducing the best metric row exactly) and the h = 40 panel dump, which
-`make spacetx-insample` writes under `spacetx/MERFISH_Allen_Prototype/insample/`;
+`make spacetx-insample-panels` writes `spacetx/<ds>/panels/spsheaf_insample.{npz,json}`;
 copy its `panels/spsheaf.{npz,json}` to `panels/spsheaf_h40.{npz,json}` of the
 main results folder (that is where the figure reads them; done once by hand
 on 5 Sep 2026, reproduced 0.753/0.778).

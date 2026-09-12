@@ -3,15 +3,21 @@
 One row per section. Each row shows the layer annotation, the smoothed sheaf
 disagreement field on the spSheaf grid, the spSheaf partition at the
 parameters carried over from MERFISH, and every competitor at its best
-in-sample setting, all Hungarian-matched to the annotation. The Allen row adds
-the spSheaf partition at the in-sample bandwidth (h = 40 um), which is the one
-setting that did not transfer. Every ARI printed above a map is read from the
-results tables that Table 2 of the manuscript is built from; nothing is typed
-in here.
+in-sample setting, all Hungarian-matched to the annotation. Each row then adds
+spSheaf at its own best in-sample configuration -- the argmax of the
+162-configuration grid, which is the budget the competitors were given -- so the
+two spSheaf columns are the transferred and in-sample rows of Table 2 side by
+side. Every ARI printed above a map is read from the results tables that Table 2
+is built from; nothing is typed in here.
+
+The in-sample column appears only once its panel dump exists. ``main`` prints the
+exact command for any that is missing, and the configuration in it is read from
+the sweep table, never hard-coded.
 
 Inputs (all under the results root of ``spsheaf.paths``):
     spacetx/<ds>/panels/spsheaf.npz|json             experiments.spacetx.run_spacetx
-    spacetx/MERFISH_Allen_Prototype/panels/spsheaf_h40.npz|json   (same, --bandwidth 40 --smooth-radius 120)
+    spacetx/<ds>/panels/spsheaf_insample.npz|json    (same, at the sweep argmax)
+    spacetx/<ds>/sweep.csv                           experiments.spacetx.sweep
     segfree/spacetx_<ds>/labels_{p2r_best,ssam_best_sweep,ficture_best}.csv
     segfree/spacetx_<ds>/metrics_{p2r,ssam}.json, segfree/ficture/metrics_spacetx_<ds>.csv
 
@@ -57,6 +63,30 @@ def _load_spsheaf(ds, name="spsheaf"):
     return d, meta
 
 
+INSAMPLE = "spsheaf_insample"
+#: sweep column -> run_spacetx flag, for the reproduction command printed below
+FLAGS = {"bandwidth": "--bandwidth", "smooth_radius": "--smooth-radius",
+         "uniform_dim": "--uniform-dim", "spatial_weight": "--spatial-weight",
+         "boundary_alpha": "--boundary-alpha", "reference": "--reference"}
+
+
+def insample_config(ds):
+    """The argmax row of the in-sample grid, as a plain dict, or None."""
+    p = _results("spacetx", ds, "sweep.csv")
+    if not p.exists():
+        return None
+    d = pd.read_csv(p).dropna(subset=["ari"])
+    return None if d.empty else d.loc[d.ari.idxmax()].to_dict()
+
+
+def insample_command(ds, cfg):
+    """The command that produces the missing panel dump, at exactly that config."""
+    flags = " ".join(f"{FLAGS[k]} {cfg[k]:g}" if isinstance(cfg[k], float) else f"{FLAGS[k]} {cfg[k]}"
+                     for k in FLAGS if k in cfg and pd.notna(cfg[k]))
+    return (f"python -m experiments.spacetx.run_spacetx {ds} $SPACETX_COLS "
+            f"--grid-spacing 10 {flags} --panel-name {INSAMPLE}")
+
+
 def _matched(pred, gti, valid):
     """Contiguous relabel, then Hungarian match onto the annotation indices."""
     _, contig = np.unique(pred, return_inverse=True)
@@ -96,7 +126,7 @@ def _draw_cells(ax, xy, lab, s):
     ss.rasterize(sc, dpi=600)
 
 
-def row_panel(ds, path, *, height_mm, extra=None, cell_s=1.2):
+def row_panel(ds, path, *, height_mm, cell_s=1.2):
     d, meta = _load_spsheaf(ds)
     names = meta["gt_names"]
     xy, gti = d["cell_coords"], d["cell_gt_int"]
@@ -105,10 +135,19 @@ def row_panel(ds, path, *, height_mm, extra=None, cell_s=1.2):
     cols = [("annotation", "cells", gti, None),
             ("sheaf field $\\tilde B$ (rank)", "field", field, None),
             ("spSheaf", "cells", d["cell_pred_matched"], meta["metrics"]["ari"])]
-    if extra is not None:
-        de, me = _load_spsheaf(ds, extra)
-        cols.append((f"spSheaf, $h$ {me['params']['bandwidth']:g} $\\mu$m", "cells",
-                     de["cell_pred_matched"], me["metrics"]["ari"]))
+    cfg = insample_config(ds)
+    if cfg is not None:
+        if _results("spacetx", ds, "panels", f"{INSAMPLE}.npz").exists():
+            de, me = _load_spsheaf(ds, INSAMPLE)
+            cols.append(("spSheaf, in-sample", "cells",
+                         de["cell_pred_matched"], me["metrics"]["ari"]))
+            if abs(me["metrics"]["ari"] - cfg["ari"]) > 0.01:
+                print(f"  ! {ds}: panel ARI {me['metrics']['ari']:.3f} but the grid argmax "
+                      f"is {cfg['ari']:.3f} -- the dump is stale, re-run:\n    "
+                      + insample_command(ds, cfg))
+        else:
+            print(f"  ! {ds}: no in-sample column (grid argmax ARI {cfg['ari']:.3f}). "
+                  f"To draw it:\n    " + insample_command(ds, cfg))
     for name, lab, ari in _competitors(ds, gti, valid):
         cols.append((name, "cells", lab, ari))
     w = 180 - 16
@@ -175,7 +214,7 @@ FIG = Layout(
 def main():
     ss.apply()
     names_a = row_panel("MERFISH_Allen_Prototype", PANELS / "edsx_a.pdf",
-                        height_mm=H_A, extra="spsheaf_h40", cell_s=1.6)
+                        height_mm=H_A, cell_s=1.6)
     legend_strip(PANELS / "edsx_la.pdf", names_a)
     names_b = row_panel("BARISTASeq", PANELS / "edsx_b.pdf", height_mm=H_B, cell_s=1.0)
     legend_strip(PANELS / "edsx_lb.pdf", names_b)

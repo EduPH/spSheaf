@@ -108,20 +108,41 @@ def load_ssam(metric: str, guided: bool = False) -> dict:
     return out
 
 
+#: FICTURE's default seed. Its `spatial` and `kmeans` aggregations were run at
+#: five seeds each while `argmax` is deterministic; the seeded runs are reduced
+#: to this one seed so that a FICTURE configuration is a single run, which is
+#: what a Points2Regions, SSAM or spSheaf configuration is (see
+#: ``load_points2regions`` and ``load_ssam`` above, and spSheaf's own grids at
+#: k-means seed 42). Averaging FICTURE's seeds instead -- which this function
+#: used to do -- scores it at a configuration's expected value while every other
+#: method is scored at one draw, and the two are not comparable: on MERFISH the
+#: difference is 0.016 held-out ARI, against FICTURE.
+FICTURE_SEED = "0.0"
+
+
+def _ficture_default_seed(rows: list[tuple[str, float]]) -> float:
+    """The default-seed run of one configuration, or its only run if unseeded."""
+    by_seed = dict(rows)
+    for k in (FICTURE_SEED, ""):
+        if k in by_seed:
+            return by_seed[k]
+    return next(iter(by_seed.values()))
+
+
 def load_ficture(metric: str) -> dict:
     if not LEGACY:
         # clean rerun: one table per slice from eval_ficture.py; a configuration
-        # is (model, mapping) with the k-means/spatial mappings averaged over
-        # their five seeds, so that a seed is never selected on the annotation
+        # is (strategy, model), taken at FICTURE_SEED so that it is one run
         out: dict = {}
         for s in SLICES:
             path = RESULTS / "metrics" / f"ficture_merfish_clean__metrics_{s}.csv"
             acc: dict = {}
             with path.open() as fh:
                 for r in csv.DictReader(fh):
-                    acc.setdefault((r["strategy"], r["model"]), []).append(float(r[metric]))
-            for key, vals in acc.items():
-                out.setdefault(key, {})[s] = st.mean(vals)
+                    acc.setdefault((r["strategy"], r["model"]), []).append(
+                        (r.get("seed", ""), float(r[metric])))
+            for key, rows in acc.items():
+                out.setdefault(key, {})[s] = _ficture_default_seed(rows)
         return out
     out: dict = {}
     with (RESULTS / "ficture_all_settings.csv").open() as fh:

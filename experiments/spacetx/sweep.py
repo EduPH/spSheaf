@@ -20,11 +20,20 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-from spsheaf import evaluation, paths, pipeline
+from spsheaf import evaluation, paths, pipeline, sheaf
 from experiments.spacetx import run_spacetx as RS
 
-GRID = dict(bandwidth=(25.0, 40.0, 60.0), spatial_weight=(0.25, 0.5, 0.75),
-            smooth_radius=(60.0, 120.0), boundary_alpha=(0.5,))
+#: 162 configurations. The competitors on these sections are selected over
+#: 288 (SSAM), 66 (FICTURE) and 24 (Points2Regions) settings, every one scored
+#: against the section's own annotation, so an 18-setting grid was not the
+#: symmetric counterpart it was described as. This grid stays below the largest
+#: competitor's and adds the two axes the old one omitted: the coordinate
+#: reference, which is the one setting known not to transfer to these sparser
+#: sections, and the stalk dimension.
+GRID = dict(reference=("local", "tissue"),
+            bandwidth=(25.0, 40.0, 60.0), spatial_weight=(0.25, 0.5, 0.75),
+            smooth_radius=(60.0, 120.0, 180.0), uniform_dim=(4, 6, 9),
+            boundary_alpha=(0.5,))
 
 
 def main():
@@ -38,24 +47,37 @@ def main():
     t = np.asarray(meta["registration"]["translation"])       # the same label-free registration
     out = paths.results("spacetx") / a.dataset / "sweep.csv"
     done = pd.read_csv(out) if out.exists() else pd.DataFrame()
+    # rows written before this grid existed carry neither column; they were run
+    # at the defaults, so that is what they are treated as
+    if len(done):
+        if "reference" not in done:
+            done["reference"] = "local"
+        if "uniform_dim" not in done:
+            done["uniform_dim"] = a.uniform_dim
     t0 = time.time()
-    for h, a_s, s_s, a_b in itertools.product(*GRID.values()):
-        if len(done) and ((done.bandwidth == h) & (done.spatial_weight == a_s) &
-                          (done.smooth_radius == s_s) & (done.boundary_alpha == a_b)).any():
+    for ref, h, a_s, s_s, d, a_b in itertools.product(*GRID.values()):
+        if len(done) and ((done.reference == ref) & (done.bandwidth == h) &
+                          (done.spatial_weight == a_s) & (done.smooth_radius == s_s) &
+                          (done.uniform_dim == d) & (done.boundary_alpha == a_b)).any():
             continue
         if time.time() - t0 > a.budget_s:
-            print("budget reached; run again to continue"); break
+            print(f"budget reached after {len(done)} of "
+                  f"{np.prod([len(v) for v in GRID.values()])}; run again to continue")
+            break
+        sheaf.REFERENCE = ref          # compute_boundary_scores reads this when reference=None
         res = pipeline.run_single_slice(
             mol=mol, slice_name=f"spacetx_{a.dataset}", n_clusters=k, grid_spacing=a.grid_spacing,
-            bandwidth=h, smooth_radius=s_s, k_graph=6, k_nbrs=50, uniform_dim=a.uniform_dim,
+            bandwidth=h, smooth_radius=s_s, k_graph=6, k_nbrs=50, uniform_dim=d,
             spatial_weight=a_s, boundary_alpha=a_b, cleanup=True, eval_at_cell_level=False,
             random_state=a.seed, verbose=False)
         _, idx = cKDTree(res["grid_coords"]).query(cxy + t, k=1)
         pred = res["labels"][idx]
-        row = dict(bandwidth=h, spatial_weight=a_s, smooth_radius=s_s, boundary_alpha=a_b,
+        row = dict(reference=ref, bandwidth=h, spatial_weight=a_s, smooth_radius=s_s,
+                   uniform_dim=d, boundary_alpha=a_b,
                    ari=evaluation.compute_ari(pred, gti, valid), nmi=evaluation.compute_nmi(pred, gti, valid))
         done = pd.concat([done, pd.DataFrame([row])], ignore_index=True); done.to_csv(out, index=False)
-        print(f"h={h:.0f} a_s={a_s} s_s={s_s:.0f} a_b={a_b}  ARI {row['ari']:.3f} NMI {row['nmi']:.3f}", flush=True)
+        print(f"{ref:6s} h={h:.0f} a_s={a_s} s_s={s_s:.0f} d={d} "
+              f"a_b={a_b}  ARI {row['ari']:.3f} NMI {row['nmi']:.3f}", flush=True)
     if len(done):
         b = done.sort_values("ari", ascending=False).iloc[0]
         print(f"\n{len(done)} settings; best in-sample ARI {b.ari:.3f} NMI {b.nmi:.3f} at "

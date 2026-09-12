@@ -1,6 +1,16 @@
-.PHONY: help install install-benchmark test merfish merfish-seeds merfish-section-all local-all reference-check osmfish-seeds osmfish-all spacetx-all osmfish segfree clean-cache \
-        figures figures-verify figures-test figures-all figures-audit figures-panels panels-osmfish panels-pecab panels-segfree panels-multislice merfish-loo-cv matched-selection spacetx spacetx-baselines spacetx-segfree spacetx-ficture spacetx-ficture-labels spacetx-insample
-
+.PHONY: help install install-pinned install-benchmark install-figures requirements test \
+        merfish merfish-seeds merfish-section-all merfish-loo-cv local-all reference-check \
+        cache boundary-eval method-validation sheaf-ablation k-sensitivity revision \
+        merfish-reference-field \
+        osmfish osmfish-seeds osmfish-all osmfish-insample osmfish-insample-tissue \
+        osmfish-diagnose osmfish-rule \
+        osmfish-cv osmfish-attribute osmfish-resolution osmfish-elongation \
+        spacetx spacetx-all spacetx-baselines spacetx-segfree spacetx-ficture \
+        spacetx-ficture-labels spacetx-insample-grid spacetx-insample-panels \
+        segfree segfree-inputs matched-selection benchmark-table benchmark-table-check \
+        figures figures-verify figures-test figures-all figures-audit figures-panels \
+        panels-osmfish panels-pecab panels-segfree panels-multislice \
+        reported reported-check clean-cache
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	  awk 'BEGIN{FS=":.*?## "}{printf "  %-20s %s\n", $$1, $$2}'
@@ -36,7 +46,7 @@ local-all:          ## every headline run for the local-centering variant (SPSHE
 	$(MAKE) osmfish
 	$(MAKE) spacetx SPACETX=MERFISH_Allen_Prototype
 	$(MAKE) spacetx SPACETX=BARISTASeq
-	$(MAKE) spacetx-insample
+	$(MAKE) spacetx-insample-panels
 
 reference-check:    ## osmFISH and the SpaceTx sections with the tissue reference (the optional term), for the sensitivity table
 	for l in 1; do \
@@ -63,9 +73,8 @@ spacetx-all:        ## both SpaceTx sections: transferred run, naive baselines, 
 	$(MAKE) spacetx SPACETX=BARISTASeq
 	$(MAKE) spacetx-baselines SPACETX=MERFISH_Allen_Prototype
 	$(MAKE) spacetx-baselines SPACETX=BARISTASeq
-	python -m experiments.spacetx.sweep MERFISH_Allen_Prototype --budget-s 3000
-	python -m experiments.spacetx.sweep BARISTASeq --budget-s 3000
-	$(MAKE) spacetx-insample
+	$(MAKE) spacetx-insample-grid
+	$(MAKE) spacetx-insample-panels
 
 merfish-section-all: ## everything the MERFISH input policy touches, in order (hours)
 	$(MAKE) merfish
@@ -102,6 +111,17 @@ panels-pecab:       ## re-run both PECAb replicates and dump their panel data
 segfree-inputs:     ## report which benchmark inputs are available
 	python -m benchmarks.segfree.inputs
 
+# --- provenance ---------------------------------------------------------
+# data/ is untracked; reported/ is the small versioned part of it, and is what
+# lets a clone check a number in the manuscript or rebuild ED Fig. 5.
+
+reported:           ## refresh reported/ from the results root, then its README
+	python tools/collect_reported.py
+	python tools/collect_reported.py --readme
+
+reported-check:     ## fail if reported/ has drifted from the results root
+	python tools/collect_reported.py --check
+
 clean-cache:        ## drop derived intermediates (raw data untouched)
 	rm -rf data/cache/*
 
@@ -114,6 +134,9 @@ cache:              ## build the shared MERFISH cache for SLICE (slow, once)
 
 boundary-eval:      ## memo 3: score the boundary FIELD directly
 	python -m experiments.merfish.boundary_eval --slice $(SLICE)
+
+merfish-reference-field: ## what the coordinate reference does to the field (needs the cache)
+	python -m experiments.merfish.reference_field
 
 method-validation:  ## synthetic check: what the subspace comparison sees that a kernel cannot
 	python -m experiments.merfish.method_validation
@@ -139,6 +162,12 @@ osmfish-cv:         ## leave-one-spatial-block-out, matching MERFISH LOO-CV
 osmfish-attribute:  ## which transferred change costs the accuracy? (8 runs)
 	python -m experiments.osmfish.tune --stage attribute
 
+osmfish-insample:   ## osmFISH in-sample grid, local reference (hours, resumable)
+	python -m experiments.osmfish.run_osmFISH --sweep
+
+osmfish-insample-tissue: ## the same grid with the tissue reference; rows carry reference= and resume separately
+	SPSHEAF_REFERENCE=tissue python -m experiments.osmfish.run_osmFISH --sweep
+
 osmfish-resolution: ## does domain WIDTH predict which domains are lost?
 	python -m experiments.osmfish.resolution
 
@@ -163,6 +192,7 @@ figures:            ## build every manuscript figure from data
 	cd $(FIGDIR) && python ed_multislice.py
 	cd $(FIGDIR) && python ed_spacetx.py
 	cd $(FIGDIR) && python ed_merfishslices.py
+	cd $(FIGDIR) && python ed_sensitivity.py
 	cd $(FIGDIR) && python ed_composites.py
 
 figures-verify:     ## assert the specification on the composed PDFs
@@ -175,6 +205,7 @@ figures-verify:     ## assert the specification on the composed PDFs
 	  $(FIGDIR)/out/ed_pecab.pdf \
 	  $(FIGDIR)/out/ed_scale.pdf \
 	  $(FIGDIR)/out/ed_merfishslices.pdf \
+	  $(FIGDIR)/out/ed_sensitivity.pdf \
 	  $(FIGDIR)/out/ed_dnaterr.pdf \
 	  $(FIGDIR)/out/ed_ifheat.pdf \
 	  $(FIGDIR)/out/ed_multislice.pdf \
@@ -211,12 +242,24 @@ spacetx-ficture:    ## FICTURE input for the same dataset (then bash benchmarks/
 spacetx-ficture-labels:  ## per-cell labels of FICTURE's best row (for figures/ed_spacetx.py)
 	python -m benchmarks.segfree.ficture_labels spacetx_$(SPACETX)
 
-spacetx-insample:   ## the Allen in-sample bandwidth run that figures/ed_spacetx.py also draws
-	python -m experiments.spacetx.run_spacetx MERFISH_Allen_Prototype $(SPACETX_COLS) \
-	  --bandwidth 40 --smooth-radius 120 --output-dir $$(python -c "from spsheaf import paths; print(paths.results('spacetx')/'MERFISH_Allen_Prototype'/'insample')")
+# The competitors were tuned in sample over 287-288 settings (SSAM), 66 (FICTURE)
+# and 24 (Points2Regions). These 162 are spSheaf's matched budget: no larger than
+# theirs, and the same selection rule -- the argmax on the section itself.
+spacetx-insample-grid:   ## the 162-configuration in-sample grid, per section (hours, resumable)
+	python -m experiments.spacetx.sweep MERFISH_Allen_Prototype --budget-s 100000
+	python -m experiments.spacetx.sweep BARISTASeq --budget-s 100000
+
+spacetx-insample-panels: ## re-run each section at its grid argmax and dump ED Fig. 6's in-sample maps
+	python -m experiments.spacetx.insample_panels
 
 merfish-loo-cv:     ## leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s); the artifact behind Methods 4.12/4.14
 	python -m experiments.merfish.loo_cv
+
+benchmark-table:    ## rebuild the whole-section competitor table from the tracked metric files
+	python -m benchmarks.segfree.make_benchmark_table
+
+benchmark-table-check: ## fail if that table has drifted from the metric files
+	python -m benchmarks.segfree.make_benchmark_table --check
 
 matched-selection:  ## memo 5 / Y.I. 2.6: one selection rule for all four methods
 	python -m benchmarks.segfree.matched_selection \

@@ -1,0 +1,231 @@
+nucleus,zone,archetype
+10,0,SINE-rich repressive
+10,1,constitutive heterochromatin
+10,2,lamina / nucleolus-associated
+10,3,lamina / nucleolus-associated
+10,4,constitutive heterochromatin
+11,0,active / nuclear speckle
+11,1,SINE-rich repressive
+11,2,constitutive heterochromatin
+11,3,lamina / nucleolus-associated
+11,4,constitutive heterochromatin
+12,0,lamina / nucleolus-associated
+12,1,SINE-rich repressive
+12,2,constitutive heterochromatin
+12,3,active / nuclear speckle
+12,4,constitutive heterochromatin
+13,0,active / nuclear speckle
+13,1,SINE-rich repressive
+13,2,constitutive heterochromatin
+13,3,constitutive heterochromatin
+13,4,constitutive heterochromatin
+14,0,constitutive heterochromatin
+14,1,active / nuclear speckle
+14,2,lamina / nucleolus-associated
+14,3,constitutive heterochromatin
+14,4,constitutive heterochromatin
+15,0,constitutive heterochromatin
+15,1,constitutive heterochromatin
+15,2,active / nuclear speckle
+15,3,constitutive heterochromatin
+15,4,lamina / nucleolus-associated
+16,0,active / nuclear speckle
+16,1,lamina / nucleolus-associated
+16,2,constitutive heterochromatin
+16,3,SINE-rich repressive
+16,4,constitutive heterochromatin
+17,0,lamina / nucleolus-associated
+17,1,SINE-rich repressive
+17,2,constitutive heterochromatin
+17,3,constitutive heterochromatin
+17,4,constitutive heterochromatin
+18,0,lamina / nucleolus-associated
+18,1,SINE-rich repressive
+18,2,active / nuclear speckle
+18,3,constitutive heterochromatin
+18,4,constitutive heterochromatin
+19,0,active / nuclear speckle
+19,1,lamina / nucleolus-associated
+19,2,SINE-rich repressive
+19,3,constitutive heterochromatin
+19,4,lamina / nucleolus-associated
+1,0,SINE-rich repressive
+1,1,active / nuclear speckle
+1,2,lamina / nucleolus-associated
+1,3,lamina / nucleolus-associated
+1,4,constitutive heterochromatin
+20,0,SINE-rich repressive
+20,1,constitutive heterochromatin
+20,2,constitutive heterochromatin
+20,3,constitutive heterochromatin
+20,4,active / nuclear speckle
+21,0,constitutive heterochromatin
+21,1,lamina / nucleolus-associated
+21,2,constitutive heterochromatin
+21,3,lamina / nucleolus-associated
+21,4,SINE-rich repressive
+22,0,active / nuclear speckle
+22,1,constitutive heterochromatin
+22,2,SINE-rich repressive
+22,3,constitutive heterochromatin
+22,4,lamina / nucleolus-associated
+23,0,constitutive heterochromatin
+23,1,active / nuclear speckle
+23,2,constitutive heterochromatin
+23,3,lamina / nucleolus-associated
+23,4,SINE-rich repressive
+24,0,active / nuclear speckle
+24,1,constitutive heterochromatin
+24,2,SINE-rich repressive
+24,3,constitutive heterochromatin
+24,4,lamina / nucleolus-associated
+25,0,lamina / nucleolus-associated
+25,1,SINE-rich repressive
+25,2,SINE-rich repressive
+25,3,lamina / nucleolus-associated
+25,4,active / nuclear speckle
+26,0,active / nuclear speckle
+26,1,constitutive heterochromatin
+26,2,constitutive heterochromatin
+26,3,lamina / nucleolus-associated
+26,4,constitutive heterochromatin
+27,0,constitutive heterochromatin
+27,1,SINE-rich repressive
+27,2,active / nuclear speckle
+27,3,active / nuclear speckle
+27,4,lamina / nucleolus-associated
+28,0,constitutive heterochromatin
+28,1,SINE-rich repressive
+28,2,active / nuclear speckle
+28,3,constitutive heterochromatin
+28,4,lamina / nucleolus-associated
+29,0,constitutive heterochromatin
+29,1,SINE-rich repressive
+29,2,active / nuclear speckle
+29,3,lamina / nucleolus-associated
+29,4,SINE-rich repressive
+2,0,lamina / nucleolus-associated
+2,1,constitutive heterochromatin
+2,2,active / nuclear speckle
+2,3,SINE-rich repressive
+2,4,constitutive heterochromatin
+30,0,lamina / nucleolus-associated
+30,1,SINE-rich repressive
+30,2,constitutive heterochromatin
+30,3,constitutive heterochromatin
+30,4,active / nuclear speckle
+31,0,SINE-rich repressive
+31,1,constitutive heterochromatin
+31,2,SINE-rich repressive
+31,3,lamina / nucleolus-associated
+31,4,active / nuclear speckle
+32,0,SINE-rich repressive
+32,1,SINE-rich repressive
+32,2,lamina / nucleolus-associated
+32,3,active / nuclear speckle
+32,4,lamina / nucleolus-associated
+33,0,constitutive heterochromatin
+33,1,SINE-rich repressive
+33,2,constitutive heterochromatin
+33,3,lamina / nucleolus-associated
+33,4,active / nuclear speckle
+34,0,lamina / nucleolus-associated
+34,1,active / nuclear speckle
+34,2,constitutive heterochromatin
+34,3,SINE-rich repressive
+34,4,constitutive heterochromatin
+35,0,SINE-rich repressive
+35,1,active / nuclear speckle
+35,2,lamina / nucleolus-associated
+35,3,SINE-rich repressive
+35,4,lamina / nucleolus-associated
+36,0,active / nuclear speckle
+36,1,lamina / nucleolus-associated
+36,2,SINE-rich repressive
+36,3,constitutive heterochromatin
+36,4,constitutive heterochromatin
+37,0,active / nuclear speckle
+37,1,active / nuclear speckle
+37,2,lamina / nucleolus-associated
+37,3,SINE-rich repressive
+37,4,constitutive heterochromatin
+38,0,lamina / nucleolus-associated
+38,1,constitutive heterochromatin
+38,2,SINE-rich repressive
+38,3,constitutive heterochromatin
+38,4,active / nuclear speckle
+39,0,active / nuclear speckle
+39,1,SINE-rich repressive
+39,2,constitutive heterochromatin
+39,3,constitutive heterochromatin
+39,4,lamina / nucleolus-associated
+3,0,SINE-rich repressive
+3,1,active / nuclear speckle
+3,2,lamina / nucleolus-associated
+3,3,lamina / nucleolus-associated
+3,4,constitutive heterochromatin
+40,0,lamina / nucleolus-associated
+40,1,constitutive heterochromatin
+40,2,active / nuclear speckle
+40,3,constitutive heterochromatin
+40,4,SINE-rich repressive
+41,0,lamina / nucleolus-associated
+41,1,constitutive heterochromatin
+41,2,SINE-rich repressive
+41,3,constitutive heterochromatin
+41,4,active / nuclear speckle
+42,0,lamina / nucleolus-associated
+42,1,SINE-rich repressive
+42,2,lamina / nucleolus-associated
+42,3,constitutive heterochromatin
+42,4,constitutive heterochromatin
+43,0,SINE-rich repressive
+43,1,lamina / nucleolus-associated
+43,2,constitutive heterochromatin
+43,3,active / nuclear speckle
+43,4,lamina / nucleolus-associated
+44,0,constitutive heterochromatin
+44,1,constitutive heterochromatin
+44,2,lamina / nucleolus-associated
+44,3,SINE-rich repressive
+44,4,lamina / nucleolus-associated
+45,0,constitutive heterochromatin
+45,1,constitutive heterochromatin
+45,2,constitutive heterochromatin
+45,3,SINE-rich repressive
+45,4,lamina / nucleolus-associated
+46,0,constitutive heterochromatin
+46,1,active / nuclear speckle
+46,2,SINE-rich repressive
+46,3,lamina / nucleolus-associated
+46,4,constitutive heterochromatin
+4,0,active / nuclear speckle
+4,1,active / nuclear speckle
+4,2,lamina / nucleolus-associated
+4,3,SINE-rich repressive
+4,4,constitutive heterochromatin
+5,0,constitutive heterochromatin
+5,1,SINE-rich repressive
+5,2,lamina / nucleolus-associated
+5,3,constitutive heterochromatin
+5,4,active / nuclear speckle
+6,0,SINE-rich repressive
+6,1,lamina / nucleolus-associated
+6,2,active / nuclear speckle
+6,3,constitutive heterochromatin
+6,4,lamina / nucleolus-associated
+7,0,lamina / nucleolus-associated
+7,1,active / nuclear speckle
+7,2,SINE-rich repressive
+7,3,constitutive heterochromatin
+7,4,constitutive heterochromatin
+8,0,active / nuclear speckle
+8,1,constitutive heterochromatin
+8,2,constitutive heterochromatin
+8,3,constitutive heterochromatin
+8,4,constitutive heterochromatin
+9,0,lamina / nucleolus-associated
+9,1,constitutive heterochromatin
+9,2,constitutive heterochromatin
+9,3,constitutive heterochromatin
+9,4,active / nuclear speckle

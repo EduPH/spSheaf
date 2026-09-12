@@ -114,7 +114,11 @@ def main():
 
     out = paths.results("osmfish") / "elongation.csv"
     df.to_csv(out, index=False)
-    print(f"\n-> {out}")
+    # The per-alpha_s ARI/NMI were printed above and then lost -- four numbers
+    # the Methods quotes, with nothing on disk behind them. Write them too.
+    swp = paths.results("osmfish") / "alpha_sweep.csv"
+    pd.DataFrame(rows).to_csv(swp, index=False)
+    print(f"\n-> {out}\n-> {swp}")
 
 
 if __name__ == "__main__":

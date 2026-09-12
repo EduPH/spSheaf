@@ -28,6 +28,7 @@ Usage:
 
 import argparse
 import os
+import time
 import sys
 import warnings
 
@@ -39,7 +40,7 @@ from scipy.spatial import cKDTree
 from scipy.optimize import linear_sum_assignment
 
 
-from spsheaf import pipeline, evaluation
+from spsheaf import pipeline, evaluation, sheaf
 
 warnings.filterwarnings("ignore")
 
@@ -551,18 +552,29 @@ def sweep(args):
     if args.h5ad_path and os.path.exists(args.h5ad_path):
         cell_coords, cell_gt_str = load_cell_ground_truth(args.h5ad_path)
 
+    # 108 configurations, which is the size of the grid SSAM is selected over
+    # on this section (3 clustering resolutions x 36 find_domains settings, all
+    # scored against the annotation). The comparison in Table 2 is only
+    # symmetric if the two in-sample searches are the same size, so alpha_b is
+    # held at its published value rather than swept, which halves 216 to 108.
+    # The grid is a CLI argument so that an extension is recorded in the command
+    # that produced it. Defaults reproduce the 108-configuration grid, which is
+    # the size of the grid SSAM is selected over on this section (3 clustering
+    # resolutions x 36 find_domains settings, all scored against the
+    # annotation); Table 2's comparison is only symmetric if the two in-sample
+    # searches are the same size. The published grid spacing runs first, so a
+    # run stopped early still holds a complete subgrid.
     configs = []
-    for gs in [100, 150, 200]:
-        for bw in [300, 500, 700]:
-            for sr in [300, 500, 900]:
-                for ud in [6, 9]:
-                    for sw in [0.3, 0.5]:
-                        for ba in [0.5, 1.0]:
-                            configs.append(dict(
-                                grid_spacing=gs, bandwidth=bw,
-                                smooth_radius=sr, uniform_dim=ud,
-                                spatial_weight=sw, boundary_alpha=ba,
-                            ))
+    for gs in args.sweep_grid_spacing:
+        for bw in args.sweep_bandwidth:
+            for sr in args.sweep_smooth_radius:
+                for ud in args.sweep_dims:
+                    for sw in args.sweep_alpha_s:
+                        configs.append(dict(
+                            grid_spacing=gs, bandwidth=bw,
+                            smooth_radius=sr, uniform_dim=ud,
+                            spatial_weight=sw, boundary_alpha=0.5,
+                        ))
 
     print(f"\n{len(configs)} configurations\n")
     hdr = (
@@ -574,9 +586,44 @@ def sweep(args):
     print("-" * len(hdr))
 
     best_ari, best_cfg, best_metrics = -np.inf, None, {}
-    rows = []
+    # Written after every configuration, and completed configurations are
+    # skipped on a re-run: the full grid is several hours and losing it to one
+    # failure at configuration 90 is not acceptable.
+    os.makedirs(args.output_dir, exist_ok=True)
+    csv = os.path.join(args.output_dir, "osmfish_sweep.csv")
+    # The coordinate reference is part of a configuration's identity, not an
+    # ambient setting. Without it in the key, a tissue-reference re-run reads
+    # the local grid's rows, finds every configuration "already done", and
+    # silently writes nothing -- or, on a fresh file, produces tissue rows
+    # indistinguishable from local ones. Both happened to be one command away.
+    KEYS = ["grid_spacing", "bandwidth", "smooth_radius", "uniform_dim",
+            "spatial_weight", "boundary_alpha", "reference"]
+    reference = sheaf.REFERENCE
+    if os.path.exists(csv):
+        prev = pd.read_csv(csv)
+        if "reference" not in prev.columns:
+            # rows written before this column existed are all local
+            prev["reference"] = "local"
+            print(f"backfilled reference='local' on {len(prev)} existing rows")
+        rows = prev.to_dict("records")
+        seen = {tuple(r[k] for k in KEYS) for r in rows}
+        done = sum(1 for c in configs
+                   if tuple({**c, "reference": reference}[k] for k in KEYS) in seen)
+        print(f"resuming ({reference} reference): {done} of {len(configs)} "
+              f"configurations already done; {len(rows)} rows in the file")
+        if len(rows):
+            i = int(np.nanargmax([r.get("ari", float("nan")) for r in rows]))
+            best_ari = rows[i].get("ari", -np.inf)
+            best_cfg = {k: rows[i][k] for k in KEYS}
+    else:
+        rows, seen = [], set()
 
-    for cfg in configs:
+    t_start = time.time()
+    for n_done, cfg in enumerate(configs):
+        if tuple({**cfg, "reference": reference}[k] for k in KEYS) in seen:
+            continue
+        el = time.time() - t_start
+        print(f"[{n_done + 1}/{len(configs)}] elapsed {el / 60:.0f} min", flush=True)
         try:
             res = pipeline.run_single_slice(
                 mol=mol, slice_name=SLICE_NAME,
@@ -613,7 +660,9 @@ def sweep(args):
             f"{g('chaos'):7.4f} {g('pas'):7.4f} {g('asw'):7.4f}"
         )
 
-        rows.append({**cfg, **{k: g(k) for k in _METRIC_KEYS}})
+        rows.append({**cfg, "reference": reference,
+                     **{k: g(k) for k in _METRIC_KEYS}})
+        pd.DataFrame(rows).to_csv(csv, index=False)
         if g("ari") > best_ari:
             best_ari = g("ari")
             best_cfg = cfg.copy()
@@ -629,10 +678,8 @@ def sweep(args):
                 "grid_spacing", "bandwidth", "smooth_radius") else ""
             print(f"  {k:18s} = {v}{suffix}")
 
-    os.makedirs(args.output_dir, exist_ok=True)
-    csv = os.path.join(args.output_dir, "osmfish_sweep.csv")
     pd.DataFrame(rows).to_csv(csv, index=False)
-    print(f"\nSaved {csv}")
+    print(f"\nSaved {csv}  ({len(rows)} configurations)")
 
 
 # ===================================================================
@@ -683,6 +730,12 @@ def parse_args():
                         "(first line of .txt).")
     p.add_argument("--verbose", action="store_true", default=True)
     p.add_argument("--sweep", action="store_true")
+    p.add_argument("--sweep-grid-spacing", type=int, nargs="+", default=[150, 200, 100])
+    p.add_argument("--sweep-bandwidth", type=int, nargs="+", default=[300, 500, 700])
+    p.add_argument("--sweep-smooth-radius", type=int, nargs="+", default=[300, 500, 900])
+    p.add_argument("--sweep-dims", type=int, nargs="+", default=[6, 9],
+                   help="stalk dimension d; 33 genes are available on this panel")
+    p.add_argument("--sweep-alpha-s", type=float, nargs="+", default=[0.3, 0.5])
     p.add_argument("--output-dir",
                    default=str(paths.results("osmfish")
                                / "output_osmFISH_boundary"))

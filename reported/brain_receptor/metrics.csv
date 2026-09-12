@@ -1,0 +1,13 @@
+metric,value
+n_domains,15.0
+n_grid_points,19455.0
+silhouette,0.1084536612033844
+calinski_harabasz,362.4693908691406
+davies_bouldin,2.81428001965331
+spatial_coherence,0.9233683535634662
+boundary_mean_cross_edge,4.532030145241293
+boundary_mean_within_edge,4.401384219590944
+boundary_contrast,1.0296829177213918
+domain_size_min,582.0
+domain_size_max,2403.0
+domain_size_cv,0.3774222300198531

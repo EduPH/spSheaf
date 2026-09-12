@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import cKDTree
 
-from spsheaf import evaluation, paths, pipeline
+from spsheaf import evaluation, paths, pipeline, sheaf
 from experiments.common.panel_export import export_panels
 
 
@@ -49,11 +49,21 @@ def build_parser():
     p.add_argument("--bandwidth", type=float, default=25.0, help="um")
     p.add_argument("--smooth-radius", type=float, default=60.0, help="um")
     p.add_argument("--uniform-dim", type=int, default=6)
+    p.add_argument("--spatial-weight", type=float, default=0.5,
+                   help="alpha_s: weight on the coordinates in the clustering feature")
+    p.add_argument("--boundary-alpha", type=float, default=0.5,
+                   help="alpha_b: strength of the boundary down-weighting")
+    p.add_argument("--reference", choices=("local", "tissue"), default=None,
+                   help="coordinate reference for the stalk sections; default: "
+                        "SPSHEAF_REFERENCE, else the package default (local)")
     p.add_argument("--n-clusters", type=int, default=None, help="default: number of annotation classes")
     p.add_argument("--register-radius", type=float, default=10.0, help="um, cell radius for the composition score")
     p.add_argument("--no-register", action="store_true", help="centroid alignment only (not recommended)")
     p.add_argument("--seed", type=int, default=42, help="k-means random_state")
     p.add_argument("--output-dir", default=None)
+    p.add_argument("--panel-name", default=None,
+                   help="basename for the exported panel npz/json "
+                        "(default: spsheaf, or spsheaf_seed<n> for a non-default seed)")
     return p
 
 
@@ -129,6 +139,8 @@ def register(mol, cxy, cid, cbg, radius, grid):
 
 def main():
     a = build_parser().parse_args()
+    if a.reference is not None:
+        sheaf.REFERENCE = a.reference   # compute_boundary_scores reads this when reference=None
     mol, cxy, cid, gt, cbg = load(a)
     valid = pd.notna(gt)
     names = sorted(set(gt[valid]))
@@ -138,8 +150,9 @@ def main():
     res = pipeline.run_single_slice(
         mol=mol, slice_name=f"spacetx_{a.dataset}", n_clusters=k,
         grid_spacing=a.grid_spacing, bandwidth=a.bandwidth, smooth_radius=a.smooth_radius,
-        k_graph=6, k_nbrs=50, uniform_dim=a.uniform_dim, spatial_weight=0.5,
-        boundary_alpha=0.5, cleanup=True, eval_at_cell_level=False,
+        k_graph=6, k_nbrs=50, uniform_dim=a.uniform_dim,
+        spatial_weight=a.spatial_weight, boundary_alpha=a.boundary_alpha,
+        cleanup=True, eval_at_cell_level=False,
         random_state=a.seed, verbose=False)
     grid, labels = res["grid_coords"], res["labels"]
     if a.no_register:
@@ -158,12 +171,12 @@ def main():
     for n, v in rec.items():
         print(f"    {n:30s} recall {v:.2f}")
     out = a.output_dir or str(paths.results("spacetx") / a.dataset)
-    export_panels(out, f"spsheaf_seed{a.seed}" if a.seed != 42 else "spsheaf", arrays=dict(grid_coords=grid, grid_labels=labels,
+    export_panels(out, a.panel_name or (f"spsheaf_seed{a.seed}" if a.seed != 42 else "spsheaf"), arrays=dict(grid_coords=grid, grid_labels=labels,
                   boundary_smooth=res["boundary_smooth"], cell_coords=cells_al,
                   cell_gt_int=gti, cell_predicted=pred, cell_pred_matched=matched),
                   meta=dict(dataset=a.dataset, gt_names=names, metrics=m, recall=rec,
                             registration=dict(translation=[float(x) for x in t], r=r, r_centroid=r0),
-                            params=vars(a)))
+                            params=dict(vars(a), reference=sheaf.REFERENCE)))
     row = dict(seed=a.seed, **{k: m[k] for k in ("ari", "nmi", "hom", "com", "chaos", "pas", "asw")})
     f = f"{out}/metrics.csv"
     import os

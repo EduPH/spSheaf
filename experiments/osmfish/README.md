@@ -4,6 +4,59 @@ Second annotated benchmark, and the one that shows the method's resolution
 limit. 33 genes, 4,839 cells, 11 annotated cortical regions, 44,410 grid
 points.
 
+## Current state (11 Sep 2026) — read this before the sections below
+
+The sections below are a working log. Two of their numbers have been superseded
+and one of them reverses a conclusion, so read this first; where they disagree,
+this section is right.
+
+**spSheaf: ARI 0.658 / NMI 0.706** at the transferred configuration
+(δ 150, h 500, σ_s 300 px, d 9, α_s 0.5, α_b 0.5 — `reported/osmfish/`). The
+0.620 quoted below is an earlier parameterisation at the same scale.
+
+**SSAM leads this dataset: ARI 0.729 / NMI 0.769.** The 0.566 below was SSAM at
+its default resolution. Resolution is a hyperparameter of SSAM's clustering, and
+given its own grid over it (144 settings, sctransform normalisation, resolution
+8) SSAM reaches 0.729 — ahead of spSheaf by 0.07 ARI. osmFISH is one of SSAM's
+own published analyses. Points2Regions reaches 0.432 and FICTURE 0.465.
+
+**Tuning does not close the gap, and that is the finding.** The in-sample grid
+matched to SSAM's 108 (`make osmfish-insample`) has its argmax *at the
+transferred configuration itself* — 0.658, no gain from 132 configurations. This
+is the only one of the four datasets where in-sample selection buys nothing, and
+it is worth stating plainly rather than burying: on osmFISH spSheaf trails, and
+the reason is not that we failed to tune it.
+
+Why, in three measurements (this is the content of `make osmfish-diagnose` and
+Methods, "Is a missed domain separable at all?"):
+
+- **The information is in the panel.** A supervised classifier on the same
+  fibers separates the two missed layers at 0.773 and 0.707 balanced accuracy.
+  So the failure is not that 33 genes cannot tell these layers apart.
+- **The field does not see the interface.** The smoothed disagreement at both
+  missed interfaces is 0.82× its value at the interfaces that *are* recovered.
+  The boundary signal is present everywhere else and absent exactly here.
+- **The geometry is below the kernel's resolution.** These domains are narrower
+  than 2h, the kernel's mixing extent, so the fibers on either side of the
+  interface are built from overlapping molecule sets and the disagreement has
+  nowhere to form. Narrowing h does not help: it removes the mixing and adds
+  variance faster, and the in-sample grid already contains the narrower kernels.
+- **It is not a capacity problem.** Extending d from 9 to {12, 16, 20} — up to
+  61% of the feature space — moves the best ARI by 0.001 (0.658 → 0.659), with
+  no trend (ED Fig. 5, and see the balanced-marginal warning there).
+
+So the osmFISH deficit is a resolution limit of a 33-gene panel on narrow,
+elongated cortical layers, not a tuning failure, and the manuscript reports it
+as a limitation.
+
+**One caution about the sweep table.** `osmfish_sweep.csv` is resumable and has
+132 rows, of which 108 are the matched grid over d ∈ {6, 9} and 24 extend d to
+{12, 16, 20} on a sub-grid. A marginal read over all 132 is unbalanced and
+misleading: the d effect reads 0.053 that way against 0.018 balanced. Anything
+that marginalises over this table must restrict to complete blocks;
+`figures/ed_sensitivity.py` does, and earlier readings of a declining trend in d
+came from an incomplete table and are wrong — do not cite them.
+
 ## Run
 
 ```bash
@@ -33,14 +86,16 @@ experiment reads it. That single fix moved the same partition from ARI 0.538 to
 
 ## Results
 
-**ARI 0.620, NMI 0.694** at cell level (default initialization); 3,678 of 4,839 cells correct.
+**ARI 0.620, NMI 0.694** at cell level (default initialization); 3,678 of 4,839
+cells correct. Superseded: 0.658 / 0.706 at the transferred configuration — see
+the top of this file.
 
 Naive baselines under the same protocol: coordinates only 0.223 ± 0.006,
 expression only 0.185 ± 0.027, the two concatenated 0.222 ± 0.016.
 
-SSAM reaches ARI 0.566 / NMI 0.721 here: spSheaf leads on ARI, SSAM on NMI.
-osmFISH is one of SSAM's own primary published analyses and its released
-settings were tuned on it; spSheaf runs at the MERFISH-selected defaults.
+SSAM reaches ARI 0.566 / NMI 0.721 *at its default resolution* — superseded:
+given its own grid over resolution it reaches 0.729 / 0.769 and leads this
+dataset. See the current-state section at the top.
 
 **Per-domain recall** — the interesting part:
 
@@ -102,4 +157,5 @@ the carried-over defaults, and the same configuration wins every fold
 paper keeps the defaults for every reported number and quotes the CV value as
 the bound on what in-sample selection would add.
 
-Feeds Fig. 3 and Extended Data Fig. 2.
+Feeds Fig. 3, Extended Data Fig. 4 (osmFISH modes) and Extended Data Fig. 5
+(the sensitivity grids).

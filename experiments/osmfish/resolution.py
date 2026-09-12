@@ -57,7 +57,18 @@ def per_domain_recall(gt, pred):
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n-clusters", type=int, default=11)
+    # The scale parameters are flags so the resolution claim can be tested at a
+    # narrower kernel: at the published h the thinnest layer sits at W/2h =
+    # 1.12 and is never recovered, and the prediction is that halving h moves
+    # it to ~1.87, where every other domain is recovered.
+    ap.add_argument("--bandwidth", type=float, default=PUBLISHED["bandwidth"],
+                    help="px; multiply by PX_TO_UM for um")
+    ap.add_argument("--smooth-radius", type=float, default=PUBLISHED["smooth_radius"])
+    ap.add_argument("--uniform-dim", type=int, default=PUBLISHED["uniform_dim"])
+    ap.add_argument("--csv", default=None, help="write the table here")
     a = ap.parse_args()
+    cfg = dict(PUBLISHED, bandwidth=a.bandwidth, smooth_radius=a.smooth_radius,
+               uniform_dim=a.uniform_dim)
 
     root = paths.raw("osmfish")
     mol = load_osmfish_molecules(str(root / "mRNA_coords_raw_counting.hdf5"))
@@ -67,7 +78,7 @@ def main():
     res = pipeline.run_single_slice(
         mol=mol, slice_name=SLICE_NAME, n_clusters=a.n_clusters,
         k_graph=6, k_nbrs=50, spatial_weight=0.5, boundary_alpha=0.5,
-        cleanup=True, verbose=False, **PUBLISHED)
+        cleanup=True, verbose=False, **cfg)
     _, pred, coords_aligned, gt_int, gt_names = evaluate_at_cell_level(
         res["grid_coords"], res["labels"], cell_coords, cell_gt, verbose=False)
 
@@ -78,7 +89,7 @@ def main():
     # The threshold is 2h, not h. A fiber mixes molecules over +-h, so a band
     # of width W retains only W - 2h of interior uncontaminated by its
     # neighbours. A domain with W < 2h has no clean interior at all.
-    h_um = PUBLISHED["bandwidth"] * PX_TO_UM
+    h_um = cfg["bandwidth"] * PX_TO_UM
     rows = []
     for d, w in widths.items():
         rows.append(dict(domain=d, n=w["n"],
@@ -86,6 +97,9 @@ def main():
                          recall=recall.get(d, np.nan)))
     df = pd.DataFrame(rows).sort_values("width_um")
 
+    print(f"  config: h {cfg['bandwidth']:.0f} px ({h_um:.1f} um), "
+          f"sigma_s {cfg['smooth_radius']:.0f} px "
+          f"({cfg['smooth_radius']*PX_TO_UM:.1f} um), d {cfg['uniform_dim']}")
     print(f"  kernel bandwidth h = {h_um:.1f} um "
           f"(fibers mix over roughly +-h, so ~{2*h_um:.0f} um across)\n")
     print(f"  {'domain':32s} {'n':>5} {'width(um)':>10} {'W-2h':>9} "
