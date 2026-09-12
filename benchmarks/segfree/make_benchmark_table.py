@@ -125,6 +125,13 @@ FIC_CONFIG = ["strategy", "model", "n_factors"]
 FIC_SEED = 0.0
 
 
+def ficture_one_run(d):
+    """The rows of a FICTURE metric table that count as one run per
+    configuration: the default seed, or the only run of a deterministic
+    strategy. The figures read the same rule (ficture_labels.py, ed_spacetx.py)."""
+    return d[(d.seed == FIC_SEED) | d.seed.isna()] if "seed" in d.columns else d
+
+
 def ficture_rows(prefix, dataset):
     """FICTURE under the same rule as every other method here.
 
@@ -155,7 +162,7 @@ def ficture_rows(prefix, dataset):
         return dict(zip(keys, name if isinstance(name, tuple) else (name,)))
 
     # (a) the matched rule: one run per configuration, at the default seed
-    one = d[(d.seed == FIC_SEED) | d.seed.isna()] if "seed" in d.columns else d
+    one = ficture_one_run(d)
     a = one.loc[one.ARI.idxmax()]
     out = [row(dataset, "FICTURE", "best configuration", a.to_dict(),
                search_n=len(one), params=params_of(tuple(a[k] for k in keys)),

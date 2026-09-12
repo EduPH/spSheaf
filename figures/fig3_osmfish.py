@@ -14,8 +14,8 @@ Drawn from the arrays ``run_osmFISH.py`` exports, not from its plots:
 
 These are the quantities the legacy figure showed. The drawing is what
 changed: one shared legend instead of an unreadable inset key, no axis frames
-or pixel coordinates on the maps, a scale bar, and the boundary fields on
-percentile-clipped colour limits so the field is visible rather than flattened
+or pixel coordinates on the maps, a scale bar, and the boundary fields as
+percentile ranks over interior grid points so the field is visible rather than flattened
 by its few hottest vertices.
 
     python fig3_osmfish.py
@@ -248,27 +248,37 @@ def panel_grid_clusters(path, arr, meta):
 
 
 def _boundary(path, arr, key, title):
-    """One boundary field.
+    """One boundary field, as its percentile rank among interior grid points.
 
-    Colour limits are clipped to the 1st-99th percentile. Scaled to the
-    maximum, the few hottest vertices flatten everything else into one dark
-    slab -- which is what the legacy panel showed.
+    The grid's outer ring is the tissue edge: there the fiber neighbourhood is
+    one-sided and the disagreement is orders of magnitude above any internal
+    transition, so on a linear scale -- even clipped at the 99th percentile --
+    it owns the colour map and the interior is one black slab. ED Figs 1 and 6
+    already draw the field as a percentile rank over interior points; this
+    panel does the same (`under_tissue` from ed_merfishslices), with the edge
+    ring left grey so the section outline is still visible.
     """
+    from scipy.stats import rankdata
+    from ed_merfishslices import under_tissue
     g, b = arr["grid_coords"], np.asarray(arr[key], dtype=float)
-    lo, hi = np.percentile(b, [1, 99])
+    under = under_tissue(g, None)
+    rank = np.full(len(b), np.nan)
+    rank[under] = rankdata(b[under]) / under.sum()
     fig, ax = ss.panel(44, 62)
     # The map stops at 0.70 rather than 0.78 so that the bar AND its rotated
     # label fit inside the 44 mm panel. save_panel keeps the declared size
     # rather than cropping to the drawn content, so anything past the right
     # edge is clipped in the figure: at 0.78 the label was cut off.
     fig.subplots_adjust(left=0.02, right=0.70, top=0.98, bottom=0.06)
-    sc = ax.scatter(g[:, 0], g[:, 1], s=0.7, c=b, cmap="inferno",
-                    vmin=lo, vmax=hi, linewidths=0, rasterized=True)
+    ax.scatter(g[~under, 0], g[~under, 1], s=0.7, c="#d9d9d9", linewidths=0,
+               rasterized=True)
+    sc = ax.scatter(g[under, 0], g[under, 1], s=0.7, c=rank[under], cmap="magma",
+                    vmin=0, vmax=1, linewidths=0, rasterized=True)
     _cells(ax, g)
     # centred on the panel, so the label -- which is longer than the bar it is
     # centred on -- has room above and below it
     cax = ax.inset_axes([1.05, 0.26, 0.06, 0.48])
-    cb = fig.colorbar(sc, cax=cax)
+    cb = fig.colorbar(sc, cax=cax, ticks=[0, 0.5, 1])
     cb.set_label(title, fontsize=TICK, labelpad=2)
     cb.ax.tick_params(labelsize=TICK, length=1.6, width=0.4, pad=1.2)
     cb.outline.set_linewidth(0.4)
@@ -276,11 +286,11 @@ def _boundary(path, arr, key, title):
 
 
 def panel_raw(path, arr, meta):
-    _boundary(path, arr, "boundary_raw", "raw boundary score")
+    _boundary(path, arr, "boundary_raw", "raw boundary score (rank)")
 
 
 def panel_smooth(path, arr, meta):
-    _boundary(path, arr, "boundary_smooth", "smoothed boundary score")
+    _boundary(path, arr, "boundary_smooth", "smoothed boundary score (rank)")
 
 
 def main():

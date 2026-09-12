@@ -7,6 +7,13 @@ leave-one-slice-out cross-validation, so they were never fitted on the slice
 they are scored on. The comparison is therefore biased in the competitors'
 favour, and the reported margin is a lower bound.
 
+Since 12 Sep 2026 spSheaf is put under the SAME three rules as the competitors,
+from its own 27-configuration grid (``experiments/merfish/loo_cv.py``,
+``reported/merfish/loo_cv_table.csv``): its per-slice argmax, its one
+configuration by mean (which is the development configuration, 0.571) and its
+leave-one-slice-out value (0.552), with the number of distinct fold winners.
+Nothing about spSheaf is hard-coded any more.
+
 This script removes the asymmetry without re-running anything. The competitor
 sweeps in ``results/metrics/`` record every configuration's score on every
 slice, which is exactly what leave-one-slice-out needs. By default the
@@ -54,13 +61,36 @@ from pathlib import Path
 RESULTS = Path(__file__).resolve().parent / "results"
 SLICES = ["0.04", "0.09", "0.14", "0.19", "0.24"]
 
-#: spSheaf at its one fixed configuration: the 20-seed means of Table 1
-#: (data/results/benchmark_sdmbench/output_seed_sensitivity, section input,
-#: local reference, 9 Sep 2026). History: 0.557/0.631 = May 2026 run;
-#: 0.559/0.641 = July 2026 pipeline on the annotated-cells/z=0 input.
-SPSHEAF = {"ARI": 0.571, "NMI": 0.655}
-SPSHEAF_PER_SLICE = {"ARI": [0.570, 0.632, 0.478, 0.656, 0.518],
-                     "NMI": [0.644, 0.692, 0.582, 0.707, 0.651]}
+#: spSheaf's own grid: every (sigma_s, alpha_b, alpha_s) x slice of
+#: experiments/merfish/loo_cv.py, so that spSheaf is selected under exactly the
+#: rules the competitors are. The tracked copy under reported/ is read first;
+#: the live results tree second.
+def _spsheaf_table() -> Path:
+    here = Path(__file__).resolve().parents[2]
+    cands = [here / "reported" / "merfish" / "loo_cv_table.csv"]
+    try:
+        from spsheaf import paths
+        cands.append(paths.results("merfish") / "loo_cv_table.csv")
+    except Exception:
+        pass
+    for c in cands:
+        if c.exists():
+            return c
+    raise FileNotFoundError("spSheaf grid: run `make merfish-loo-cv` (loo_cv_table.csv)")
+
+
+def load_spsheaf(metric: str) -> dict:
+    """spSheaf configurations -> {slice: score}, from loo_cv_table.csv."""
+    out: dict = {}
+    with _spsheaf_table().open() as fh:
+        for r in csv.DictReader(fh):
+            s = r["slice"].replace("MERFISH_", "").replace(".h5ad", "")
+            key = (float(r["smooth_radius"]), float(r["boundary_alpha"]),
+                   float(r["spatial_weight"]))
+            out.setdefault(key, {})[s] = float(r[metric.lower()])
+    return out
+
+
 LEGACY = False          # set by --legacy: the contaminated bbox inputs
 SUFFIX = lambda: "" if LEGACY else "_clean"
 
@@ -189,7 +219,7 @@ def leave_one_slice_out(cfgs: dict) -> tuple[float, list, int]:
 
 def evaluate_grid(name: str, metric: str) -> dict:
     return {"Points2Regions": load_points2regions, "FICTURE": load_ficture,
-            "SSAM (de novo)": load_ssam,
+            "SSAM (de novo)": load_ssam, "spSheaf": load_spsheaf,
             "SSAM (guided)": lambda m: load_ssam(m, guided=True)}[name](metric)
 
 
@@ -198,6 +228,7 @@ def evaluate(metric: str = "ARI") -> list[dict]:
         ("Points2Regions", load_points2regions(metric)),
         ("FICTURE", load_ficture(metric)),
         ("SSAM (de novo)", load_ssam(metric)),
+        ("spSheaf", load_spsheaf(metric)),
     ]
     if LEGACY:
         methods.append(("SSAM (guided)", load_ssam(metric, guided=True)))
@@ -225,7 +256,6 @@ def evaluate(metric: str = "ARI") -> list[dict]:
 # --- reporting --------------------------------------------------------------
 
 def report(rows: list[dict], metric: str) -> str:
-    sp = SPSHEAF[metric]
     out = [
         f"MERFISH, mean {metric} over 5 slices, by model-selection rule",
         "",
@@ -243,22 +273,14 @@ def report(rows: list[dict], metric: str) -> str:
             f"{r['per_slice_argmax']:>11.3f}{r['one_config']:>12.3f}"
             f"{r['loo']:>9.3f}{r['distinct_winners']:>7d}/5"
         )
-    out += [
-        "-" * 67,
-        f"{'spSheaf':17s}{'--':>9s}{'--':>11s}{'--':>12s}{sp:>9.3f}{'1':>7s}/5",
-        "",
-    ]
-    best_pub = max(r["per_slice_argmax"] for r in rows if r["n_configs"])
-    best_loo = max(r["loo"] for r in rows if r["n_configs"])
-    out += [
-        f"spSheaf margin over the best competitor",
-        f"  as published (per-slice argmax) : +{sp - best_pub:.3f}",
-        f"  under matched LOO-CV            : +{sp - best_loo:.3f}",
-        "",
-        "The published rule lets a competitor use a different configuration on",
-        "every slice, chosen on that slice's own annotation. Removing that",
-        f"advantage widens the margin by {(sp - best_loo) - (sp - best_pub):+.3f} {metric}.",
-    ]
+    sp = next((r for r in rows if r["method"] == "spSheaf" and r["n_configs"]), None)
+    comp = [r for r in rows if r["method"] != "spSheaf" and r["n_configs"]]
+    if sp and comp:
+        out += ["-" * 67, "spSheaf margin over the best competitor, same rule on both sides"]
+        for rule, label in (("per_slice_argmax", "per-slice argmax"),
+                            ("one_config", "one configuration"),
+                            ("loo", "leave-one-slice-out")):
+            out.append(f"  {label:22s}: {sp[rule] - max(r[rule] for r in comp):+.3f}")
     return "\n".join(out)
 
 
@@ -280,8 +302,6 @@ def latex(rows: list[dict], metric: str) -> str:
             f"& {r['loo']:.3f} & {r['distinct_winners']}/5 \\\\"
         )
     lines += [
-        r"\midrule",
-        f"\\textbf{{spSheaf}} & --- & --- & \\textbf{{{SPSHEAF[metric]:.3f}}} & 1/5 \\\\",
         r"\botrule",
         r"\end{tabular}",
     ]
@@ -316,7 +336,6 @@ def main(argv=None) -> int:
                 w.writerow([r["method"], r["n_configs"],
                             f"{r['per_slice_argmax']:.4f}", f"{r['one_config']:.4f}",
                             f"{r['loo']:.4f}", r["distinct_winners"]])
-            w.writerow(["spSheaf", "", "", "", f"{SPSHEAF[args.metric]:.4f}", ""])
         print(f"\nwrote {args.csv}")
     if args.per_slice_csv:
         with args.per_slice_csv.open("w", newline="") as fh:
@@ -329,8 +348,6 @@ def main(argv=None) -> int:
                 for s, v in zip(SLICES, r["loo_per_slice"]):
                     w.writerow([r["method"], s, f"{v:.4f}",
                                 f"{max(c[s] for c in full.values()):.4f}"])
-            for s, v in zip(SLICES, SPSHEAF_PER_SLICE[args.metric]):
-                w.writerow(["spSheaf", s, f"{v:.4f}", ""])
         print(f"wrote {args.per_slice_csv}")
     return 0
 

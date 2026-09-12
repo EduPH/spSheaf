@@ -1,8 +1,10 @@
-"""Write the per-cell labels of FICTURE's best-scoring row, for the figures.
+"""Write the per-cell labels of FICTURE's best configuration, for the figures.
 
 ``eval_ficture.py`` scores every (model, mapping, seed) combination but keeps
-only the metric table. This reproduces the labels of the row with the highest
-ARI in that table and writes them next to the SSAM and Points2Regions labels:
+only the metric table. This reproduces the labels of the best row UNDER THE
+RULE OF THE COMPARISON -- one run per configuration at FICTURE's default seed
+(``make_benchmark_table.FIC_SEED``), then the argmax; the same row Table 2
+reports -- and writes them next to the SSAM and Points2Regions labels:
 
     python -m benchmarks.segfree.ficture_labels spacetx_BARISTASeq
 
@@ -22,6 +24,7 @@ import numpy as np
 import pandas as pd
 
 from benchmarks.segfree import common as bc
+from benchmarks.segfree import make_benchmark_table as bt
 from benchmarks.segfree.eval_ficture import (argmax_labels, cell_factor_profiles,
                                              cluster_profiles, read_pixel_output)
 from spsheaf import paths
@@ -34,7 +37,7 @@ def main():
     a = ap.parse_args()
     res = paths.results("segfree")
     metrics = pd.read_csv(res / "ficture" / f"metrics_{a.tag}.csv")
-    best = metrics.loc[metrics.ARI.idxmax()]
+    best = metrics.loc[bt.ficture_one_run(metrics).ARI.idxmax()]
     in_dir = paths.cache("segfree") / "ficture_input" / a.tag
     cell_xy = np.load(in_dir / "cell_xy_um.npy")
     gt_table = pd.read_csv(in_dir / "ground_truth.csv")

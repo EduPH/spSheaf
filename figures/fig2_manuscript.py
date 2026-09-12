@@ -1,8 +1,8 @@
 """Figure 2 — the segmentation-free comparison and what the sheaf term contributes.
 
-All values are measured. Per-slice competitor scores come from
-``benchmarks/segfree/matched_selection.py`` (leave-one-slice-out over the stored
-sweeps); spSheaf per-slice values are the 20-seed means of Table 1. The domain
+All values are measured. Per-slice scores for every method, spSheaf included,
+come from ``benchmarks/segfree/matched_selection.py`` (leave-one-slice-out over
+the stored grids; spSheaf's grid is ``reported/merfish/loo_cv_table.csv``). The domain
 maps of panel **a** are read from the dump written by
 ``experiments.merfish.segfree_panels``; the per-slice ablation and boundary
 values behind the dots of panels **d** and **e** are read from the
@@ -10,10 +10,9 @@ values behind the dots of panels **d** and **e** are read from the
 tables that ``make revision`` writes (the bar heights are the five-slice means
 of those same tables).
 
-spSheaf runs one fixed configuration on every slice, so its reference on
-every panel is the same number: the 20-seed mean of Table 1 (also the
-spSheaf row of ``matched_selection_ari.csv``). Panel **a**'s map is the cached
-z = 4.5 um plane (ARI 0.62 on slice 0.19); Table 1's 0.660 is the z = 0 plane.
+Since 12 Sep 2026 spSheaf is under the same three selection rules as the
+competitors (panel c shows two of them), so no spSheaf number is hard-coded
+here. Panel **a**'s spSheaf map is the one-configuration run (Table 1).
 
     python fig2_manuscript.py
     python verify_figure.py out/fig2.pdf --width-mm 180
@@ -38,11 +37,9 @@ PANELS.mkdir(exist_ok=True)
 OUT = HERE / "out" / "fig2.pdf"
 
 SLICES = ["0.04", "0.09", "0.14", "0.19", "0.24"]
-
-# per-slice ARI: spSheaf at its one fixed configuration (20-seed means of
-# Table 1); competitors under leave-one-slice-out selection, on the clean
-# sections. Both read from matched_selection.py's output so the figure cannot
-# drift from the table.
+# per-slice ARI under leave-one-slice-out for every method, and the two
+# selection rules of panel c; both read from matched_selection.py's output so
+# the figure cannot drift from the table.
 _MS = HERE.parent / "benchmarks" / "segfree" / "results"
 
 
@@ -56,7 +53,6 @@ def _per_slice():
 
 def _rules():
     df = pd.read_csv(_MS / "matched_selection_ari.csv")
-    df = df[df.method != "spSheaf"]
     return {r.method.replace(" (de novo)", ""): (float(r.per_slice_argmax), float(r.loo_cv))
             for r in df.itertuples()}
 
@@ -181,27 +177,21 @@ def panel_a(path):
 def panel_b(path):
     fig, ax = ss.panel(72, 44)
     fig.subplots_adjust(left=0.16, right=0.62, top=0.96, bottom=0.17)
-    dy = {"Points2Regions": 5, "FICTURE": -5, "SSAM": 0}
+    dy = {"spSheaf": 0, "Points2Regions": 5, "FICTURE": -6, "SSAM": 5}
     # SSAM's argmax (0.464) now sits just under Points2Regions' (0.510), so its
     # left-hand label is pushed below the marker to keep the two apart.
-    dyl = {"Points2Regions": (3, 4), "FICTURE": (3, -9), "SSAM": (3, -9)}
+    dyl = {"spSheaf": (3, 4), "Points2Regions": (3, 4), "FICTURE": (3, -9),
+           "SSAM": (3, -9)}
     for name, (a, b) in RULE.items():
         c = ss.METHOD_COLORS[name]
-        ax.plot([0, 1], [a, b], marker="o", ms=2.8, lw=1.1, color=c)
+        lead = name == "spSheaf"
+        ax.plot([0, 1], [a, b], marker="o", ms=3.2 if lead else 2.8,
+                lw=1.4 if lead else 1.1, color=c, zorder=3 if lead else 2)
         ax.annotate(f"{a:.3f}", (0, a), xytext=dyl[name],
                     textcoords="offset points", color=c, fontsize=TICK,
                     va="bottom" if dyl[name][1] > 0 else "top", ha="left")
         ax.annotate(f"{name} {b:.3f}", (1, b), xytext=(6, dy[name]),
                     textcoords="offset points", color=c, fontsize=TICK, va="center")
-    # The reference is the single representative seed, so that it comes from
-    # the same table as the competitor values on this panel. Panel a's 20-seed
-    # means average to the same number as panel a's line; read from the CSV
-    # reading as a contradiction.
-    sp = float(pd.read_csv(_MS / "matched_selection_ari.csv").query("method == 'spSheaf'").loo_cv.iloc[0])
-    ax.axhline(sp, color=ss.METHOD_COLORS["spSheaf"], lw=0.8, ls=(0, (3, 2)))
-    ax.annotate(f"spSheaf {sp:.3f}\n(20-seed mean)", (1, sp), xytext=(6, 2),
-                textcoords="offset points", color=ss.METHOD_COLORS["spSheaf"],
-                fontsize=TICK, va="bottom", linespacing=1.35)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["per-slice\nargmax", "held-out\n(matched)"])
     ax.set_xlim(-0.14, 1.14)

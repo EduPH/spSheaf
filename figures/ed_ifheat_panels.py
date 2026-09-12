@@ -103,10 +103,10 @@ def radial_certification(zone_csv, summary_csv, path, width_mm=120.0):
             rs[cell] = float(np.corrcoef(g.radius, g.periph_score)[0, 1])
     r = np.array(sorted(rs.values()))
 
-    height = 46.0
+    height = 40.0
     fig, axes = ss.panel_grid(width_mm, height, 1, 2)
-    fig.subplots_adjust(left=11.0 / width_mm, right=0.995,
-                        top=1 - 2.5 / height, bottom=9.0 / height, wspace=0.42)
+    fig.subplots_adjust(left=11.0 / width_mm, right=0.975,
+                        top=1 - 2.5 / height, bottom=7.5 / height, wspace=0.42)
     ax, bx = axes
 
     # --- left: the zones themselves -----------------------------------
@@ -135,6 +135,7 @@ def radial_certification(zone_csv, summary_csv, path, width_mm=120.0):
                      color="#333333", alpha=0.08, lw=0, zorder=1)
     bx.set_ylim(-1, len(r))
     bx.set_xlim(min(-0.08, r.min() - 0.05), 1.0)
+    bx.set_xticks([0.0, 0.5, 1.0])
     bx.set_yticks([])
     bx.set_xlabel("within-nucleus correlation $r$", fontsize=T)
     bx.set_title(f"$r = {r.mean():+.2f} \\pm {r.std():.2f}$, "
@@ -146,13 +147,16 @@ def radial_certification(zone_csv, summary_csv, path, width_mm=120.0):
         for sp in ("top", "right"):
             a_.spines[sp].set_visible(False)
 
-    # the second claim of the caption, which is a count rather than a fit
+    # the second claim of the caption, which is a count rather than a fit;
+    # set inside the right panel's empty upper-left corner (the points climb
+    # to the lower right), where it cannot collide with the axis labels
     if "frac_periphmost_is_hetero" in s.index:
         n = int(round(float(s.frac_periphmost_is_hetero) * len(r)))
-        fig.text(11.0 / width_mm, 1.2 / height,
-                 f"peripheral-most zone is a lamina/heterochromatin zone in "
-                 f"{n}/{len(r)} nuclei",
-                 fontsize=TICK, va="bottom", ha="left", color="#333333")
+        bx.text(0.03, 0.97,
+                f"peripheral-most zone is a\nlamina/heterochromatin zone\n"
+                f"in {n}/{len(r)} nuclei",
+                transform=bx.transAxes, fontsize=TICK, va="top", ha="left",
+                color="#333333", linespacing=1.3)
 
     ss.save_panel(fig, path, strict=False)
     print(f"  radial certification: {len(d)} zones, {len(r)} nuclei, "

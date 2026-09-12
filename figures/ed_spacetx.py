@@ -1,14 +1,13 @@
 """Extended Data — the two independent SpaceTx cortical sections, per cell.
 
 One row per section. Each row shows the layer annotation, the smoothed sheaf
-disagreement field on the spSheaf grid, the spSheaf partition at the
-parameters carried over from MERFISH, and every competitor at its best
-in-sample setting, all Hungarian-matched to the annotation. Each row then adds
-spSheaf at its own best in-sample configuration -- the argmax of the
-162-configuration grid, which is the budget the competitors were given -- so the
-two spSheaf columns are the transferred and in-sample rows of Table 2 side by
-side. Every ARI printed above a map is read from the results tables that Table 2
-is built from; nothing is typed in here.
+disagreement field on the spSheaf grid, and every method -- spSheaf included --
+at its own best in-sample configuration (spSheaf: the argmax of its
+162-configuration grid, Table 2's row), all Hungarian-matched to the
+annotation. Every ARI printed above a map is read from the results tables that
+Table 2 is built from; nothing is typed in here. (Until 12 Sep 2026 a further
+column showed spSheaf at the MERFISH defaults; the transfer analysis was
+dropped from the paper.)
 
 The in-sample column appears only once its panel dump exists. ``main`` prints the
 exact command for any that is missing, and the configuration in it is read from
@@ -37,6 +36,7 @@ import sheafstyle as ss
 from layout import Layout, Panel
 from spsheaf import paths
 from spsheaf.evaluation import hungarian_match_labels
+from benchmarks.segfree import make_benchmark_table as bt
 
 HERE = Path(__file__).parent
 PANELS = HERE / "panels"
@@ -108,7 +108,7 @@ def _competitors(ds, gti, valid):
         ssam_runs.append((max(d["sweep"], key=lambda r: r["ARI"])["ARI"], tag))
     ssam_ari, ssam_tag = max(ssam_runs)
     fic = pd.read_csv(_results("segfree", "ficture", f"metrics_spacetx_{ds}.csv"))
-    fic_best = fic.loc[fic.ARI.idxmax()]
+    fic_best = fic.loc[bt.ficture_one_run(fic).ARI.idxmax()]   # Table 2's rule
     out = []
     for name, csv, ari in [("Points2Regions", "labels_p2r_best.csv", p2r["ARI"]),
                            ("SSAM", f"labels_ssam_best_sweep{ssam_tag}.csv", ssam_ari),
@@ -131,23 +131,22 @@ def row_panel(ds, path, *, height_mm, cell_s=1.2):
     names = meta["gt_names"]
     xy, gti = d["cell_coords"], d["cell_gt_int"]
     valid = gti >= 0
-    grid, field = d["grid_coords"], d["boundary_smooth"]
+    cfg = insample_config(ds)
+    if cfg is None or not _results("spacetx", ds, "panels", f"{INSAMPLE}.npz").exists():
+        raise SystemExit(f"{ds}: no in-sample panel dump. To draw it:\n    "
+                         + (insample_command(ds, cfg) if cfg else "run the sweep first"))
+    # Since 12 Sep 2026 every method is shown at its own in-sample argmax, so
+    # the spSheaf column and the field are the in-sample run (Table 2's row);
+    # the MERFISH-defaults dump is read only for the annotation frame.
+    de, me = _load_spsheaf(ds, INSAMPLE)
+    if abs(me["metrics"]["ari"] - cfg["ari"]) > 0.01:
+        print(f"  ! {ds}: panel ARI {me['metrics']['ari']:.3f} but the grid argmax "
+              f"is {cfg['ari']:.3f} -- the dump is stale, re-run:\n    "
+              + insample_command(ds, cfg))
+    grid, field = de["grid_coords"], de["boundary_smooth"]
     cols = [("annotation", "cells", gti, None),
             ("sheaf field $\\tilde B$ (rank)", "field", field, None),
-            ("spSheaf", "cells", d["cell_pred_matched"], meta["metrics"]["ari"])]
-    cfg = insample_config(ds)
-    if cfg is not None:
-        if _results("spacetx", ds, "panels", f"{INSAMPLE}.npz").exists():
-            de, me = _load_spsheaf(ds, INSAMPLE)
-            cols.append(("spSheaf, in-sample", "cells",
-                         de["cell_pred_matched"], me["metrics"]["ari"]))
-            if abs(me["metrics"]["ari"] - cfg["ari"]) > 0.01:
-                print(f"  ! {ds}: panel ARI {me['metrics']['ari']:.3f} but the grid argmax "
-                      f"is {cfg['ari']:.3f} -- the dump is stale, re-run:\n    "
-                      + insample_command(ds, cfg))
-        else:
-            print(f"  ! {ds}: no in-sample column (grid argmax ARI {cfg['ari']:.3f}). "
-                  f"To draw it:\n    " + insample_command(ds, cfg))
+            ("spSheaf", "cells", de["cell_pred_matched"], me["metrics"]["ari"])]
     for name, lab, ari in _competitors(ds, gti, valid):
         cols.append((name, "cells", lab, ari))
     w = 180 - 16
