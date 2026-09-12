@@ -154,12 +154,15 @@ def ed_ifheat() -> Layout:
     """a radial certification; b archetype x mark heatmap, drawn from the
     archetype tables; c one nucleus as one section and one orthogonal slab."""
     from ed_nucleus_panels import ZONE_COLORS, nucleus_row
-    from ed_ifheat_panels import zone_mark_heatmap
+    from ed_ifheat_panels import radial_certification, zone_mark_heatmap
     from spsheaf import paths
     import pandas as pd
     name = "ed_ifheat"
     ifdir = paths.results("takei") / "output_takei_if"
-    pa, ha = place(name, "if_certification.png", 88.0)
+    pa = PANELS / "ed_ifheat_radial.pdf"
+    ha = radial_certification(ifdir / "certification_zone_table.csv",
+                              ifdir / "certification_summary.csv",
+                              pa, width_mm=120.0)
     pb = PANELS / "ed_ifheat_archetypes.pdf"
     hb = zone_mark_heatmap(ifdir / "zone_mark_heatmap.csv",
                            ifdir / "zone_archetype_sizes.csv", pb, width_mm=150.0)
@@ -185,7 +188,7 @@ def ed_ifheat() -> Layout:
     return Layout(
         name=name, width_mm=W, height_mm=total,
         panels=[
-            Panel("a", pa, (W - 88.0) / 2, ya, label_dx=-4, label_dy=-5),
+            Panel("a", pa, (W - 120.0) / 2, ya, label_dx=-4, label_dy=-5),
             Panel("b", pb, (W - 150.0) / 2, yb, label_dx=-4, label_dy=-5),
             Panel("c", pc, 6.0, yc, label_dx=-4, label_dy=-3),
         ],

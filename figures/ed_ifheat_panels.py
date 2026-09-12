@@ -1,4 +1,8 @@
-"""The chromatin-mark archetype heatmap of the IF Extended Data figure.
+"""The vector panels of the IF Extended Data figure.
+
+``radial_certification`` draws panel a from the per-zone certification table,
+replacing the placed raster ``if_certification.png``; ``zone_mark_heatmap``
+draws panel b.
 
 ``experiments/takei/make_zone_heatmaps.py --panel if`` clusters the pooled
 zones and writes ``zone_mark_heatmap.csv`` (archetype x mark composition) and
@@ -70,4 +74,91 @@ def zone_mark_heatmap(prof_csv, sizes_csv, path, width_mm=168.0):
     cb.outline.set_visible(False)
 
     ss.save_panel(fig, path, strict=False)
+    return height
+
+def radial_certification(zone_csv, summary_csv, path, width_mm=120.0):
+    """Panel a of the IF figure, drawn from the zone table instead of placed.
+
+    Left: every zone of every nucleus as a point, peripheral-mark score against
+    radial position, with one faint least-squares line per nucleus. Right: the
+    46 per-nucleus correlations, which is the claim the panel is making -- not
+    that the pooled cloud trends upward, but that it trends upward *within*
+    every nucleus separately. A pooled scatter alone cannot distinguish those
+    two, so both halves are needed.
+
+    Returns the panel height in mm.
+    """
+    d = pd.read_csv(zone_csv)
+    s = pd.read_csv(summary_csv).iloc[0]
+
+    T = ss.TYPE_PT["normal"]["text"]
+    TICK = ss.TYPE_PT["normal"]["tick"]
+    BLUE = ss.METHOD_COLORS.get("spSheaf", "#0072B2")
+
+    # per-nucleus correlation, recomputed here so the panel and the summary
+    # table cannot disagree
+    rs = {}
+    for cell, g in d.groupby("cell"):
+        if len(g) >= 3 and g.radius.std() > 0 and g.periph_score.std() > 0:
+            rs[cell] = float(np.corrcoef(g.radius, g.periph_score)[0, 1])
+    r = np.array(sorted(rs.values()))
+
+    height = 46.0
+    fig, axes = ss.panel_grid(width_mm, height, 1, 2)
+    fig.subplots_adjust(left=11.0 / width_mm, right=0.995,
+                        top=1 - 2.5 / height, bottom=9.0 / height, wspace=0.42)
+    ax, bx = axes
+
+    # --- left: the zones themselves -----------------------------------
+    for cell, g in d.groupby("cell"):
+        g = g.sort_values("radius")
+        ax.plot(g.radius, g.periph_score, "-", color=BLUE, lw=0.3, alpha=0.30,
+                zorder=2, solid_capstyle="round")
+    sc = ax.scatter(d.radius, d.periph_score, s=2.2, facecolors="none",
+                    edgecolors=BLUE, linewidths=0.35, alpha=0.75, zorder=3)
+    ss.rasterize(sc, dpi=600)
+    b, a = np.polyfit(d.radius, d.periph_score, 1)
+    xs = np.linspace(d.radius.min(), d.radius.max(), 50)
+    ax.plot(xs, a + b * xs, "-", color="#333333", lw=1.0, zorder=4)
+    ax.set_xlabel("radial position of the zone", fontsize=T)
+    ax.set_ylabel("peripheral-mark score", fontsize=T, labelpad=2)
+    ax.set_title(f"{len(d)} zones, {d.cell.nunique()} nuclei",
+                 fontsize=TICK, color="#333333", pad=2)
+
+    # --- right: one correlation per nucleus ----------------------------
+    y = np.arange(len(r))
+    bx.scatter(r, y, s=3.0, facecolors="none", edgecolors=BLUE, linewidths=0.4,
+               zorder=3)
+    bx.axvline(0.0, color="#999999", lw=0.6, zorder=2)
+    bx.axvline(r.mean(), color="#333333", lw=0.9, zorder=4)
+    bx.fill_betweenx([-1, len(r)], r.mean() - r.std(), r.mean() + r.std(),
+                     color="#333333", alpha=0.08, lw=0, zorder=1)
+    bx.set_ylim(-1, len(r))
+    bx.set_xlim(min(-0.08, r.min() - 0.05), 1.0)
+    bx.set_yticks([])
+    bx.set_xlabel("within-nucleus correlation $r$", fontsize=T)
+    bx.set_title(f"$r = {r.mean():+.2f} \\pm {r.std():.2f}$, "
+                 f"positive in {int((r > 0).sum())}/{len(r)}",
+                 fontsize=TICK, color="#333333", pad=2)
+
+    for a_ in (ax, bx):
+        a_.tick_params(labelsize=TICK, length=1.6, pad=1.5)
+        for sp in ("top", "right"):
+            a_.spines[sp].set_visible(False)
+
+    # the second claim of the caption, which is a count rather than a fit
+    if "frac_periphmost_is_hetero" in s.index:
+        n = int(round(float(s.frac_periphmost_is_hetero) * len(r)))
+        fig.text(11.0 / width_mm, 1.2 / height,
+                 f"peripheral-most zone is a lamina/heterochromatin zone in "
+                 f"{n}/{len(r)} nuclei",
+                 fontsize=TICK, va="bottom", ha="left", color="#333333")
+
+    ss.save_panel(fig, path, strict=False)
+    print(f"  radial certification: {len(d)} zones, {len(r)} nuclei, "
+          f"r = {r.mean():+.3f} +- {r.std():.3f}, "
+          f"{int((r > 0).sum())}/{len(r)} positive "
+          f"(summary table: {float(s.mean_r_radius_periph):+.3f} "
+          f"+- {float(s.sd_r_radius_periph):.3f}, "
+          f"{int(s.n_positive_periph)}/{len(r)})")
     return height
