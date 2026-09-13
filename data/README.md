@@ -29,7 +29,7 @@ python -m benchmarks.segfree.inputs     # the benchmark's declared inputs
 | Dataset | Source | Scale | Expected under `data/raw/` |
 |---|---|---|---|
 | **MERFISH** mouse hypothalamic preoptic region (Moffitt et al. 2018) | Dryad [`10.5061/dryad.8t8s248`](https://doi.org/10.5061/dryad.8t8s248). The processed molecule tables used here were prepared by Y. Imoto and are available on reasonable request. | 135 genes, ~20.5 M molecules, 5 slices, 8 annotated domains | `merfish/moffitt2018_export_full/molecules_full_add.csv.gz` |
-| **osmFISH** mouse somatosensory cortex (Codeluppi et al. 2018) | <http://linnarssonlab.org/osmFISH> | 33 genes, 4,839 cells, 11 annotated regions | `osmfish/mRNA_coords_raw_counting.hdf5`, `osmfish/osmfish_20260512084934.h5ad`, `osmfish/osmFISH_SScortex_mouse_all_cells.loom` |
+| **osmFISH** mouse somatosensory cortex (Codeluppi et al. 2018) | <http://linnarssonlab.org/osmFISH> | 33-gene panel (35 labels in the molecule table), 4,839 cells, 11 annotated regions | `osmfish/mRNA_coords_raw_counting.hdf5`, `osmfish/osmfish_20260512084934.h5ad`, `osmfish/osmFISH_SScortex_mouse_all_cells.loom` |
 | **Stereo-seq** E16.5 mouse embryo (Chen et al. 2022) | MOSTA <https://db.cngb.org/stomics/mosta>, accession `STDS0000058` | ~552 M transcripts, 28,633 genes, ~115 mm² | `stereoseq/E16.5_E1S3_GEM_bin1.tsv.gz` |
 | **MERSCOPE** mouse brain receptor showcase | Vizgen public showcase data | 54.7 M molecules, 649 genes, 7 focal planes | `brain_receptor/datasets_mouse_brain_map_BrainReceptorShowcase_Slice1_Replicate1_detected_transcripts_S1R1.csv` |
 | **DNA seqFISH+** mouse ES cells (Takei et al. 2021) | Zenodo [`10.5281/zenodo.3735329`](https://doi.org/10.5281/zenodo.3735329) (~144 MB) | ~3,600 loci per nucleus, 197 + 200 nuclei | `takei/dna_seqfish/DNAseqFISH+/DNAseqFISH+25kbloci-E14-replicate1.csv` |
@@ -49,5 +49,5 @@ the same molecule tables. Its stored label and metric tables are the
 provenance for the published comparison and are tracked; the sweeps that
 produced them are **not** re-runnable from this repository alone, because
 three declared inputs are absent or in a different format
-(`benchmarks/segfree/inputs.py` names them). Treat those tables as data, not
+(`benchmarks/segfree/inputs.py` names them; the osmFISH molecule CSV is built from the HDF5 by stripping the `_HybridizationN` suffix, all 39 rounds, 1,976,659 rows). Treat those tables as data, not
 as a pipeline.

@@ -43,11 +43,9 @@ and correspondence with known anatomy are what can be checked.
 grid points, 96.8 % overlap): ARI 0.264, NMI 0.460; after merging to matched
 divisions, accuracy 0.622, ARI 0.425.
 
-> These Allen numbers are **not in the manuscript**, which reports only that
-> the domains were registered to the CCF as an independent reference. The
-> registration is a rigid AP-plane match, not a deformable one, so the scores
-> confound domain quality with registration error. Inspect the overlay before
-> quoting them.
+> The manuscript reports these (ED Fig. 7 caption) as a reference rather than
+> a benchmark: the registration is a rigid AP-plane match, so the scores
+> confound domain quality with registration error.
 
 **3D.** `run_brain_receptor_3d.py` runs the same code over all 7 focal planes
 (117,183 grid points, coherence 0.987; a 2 × 2 mm crop gives 8 domains at
@@ -55,4 +53,4 @@ divisions, accuracy 0.622, ARI 0.425.
 ~9 mm field, so the domains are near-columnar and 3D adds no biology here.
 Not in the manuscript.
 
-Feeds Extended Data Fig. 4b,c.
+Feeds Extended Data Fig. 7b–d. The run predates the local coordinate reference and used the tissue reference (Table 4).

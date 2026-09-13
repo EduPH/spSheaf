@@ -97,7 +97,7 @@ panels-osmfish:     ## re-run osmFISH and dump the data Fig. 3 is drawn from
 panels-segfree:     ## dump the per-cell domain maps Fig. 2a is drawn from (needs the MERFISH cache)
 	python -m experiments.merfish.segfree_panels --slice MERFISH_0.19.h5ad
 
-panels-multislice:  ## re-run the five slices + gene-centroid registration and dump ED Fig. 7's data
+panels-multislice:  ## re-run the five slices + gene-centroid registration and dump ED Fig. 3's data
 	python -m experiments.merfish.multislice_panels
 
 panels-pecab:       ## re-run both PECAb replicates and dump their panel data

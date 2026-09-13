@@ -1,0 +1,18 @@
+{
+  "cv_ari_mean": 0.6711526603230777,
+  "cv_ari_sd": 0.08305245064373945,
+  "cv_nmi_mean": 0.7410038998413969,
+  "cv_nmi_sd": 0.055525712317266177,
+  "selection_stable_across_folds": false,
+  "final_config": {
+    "grid_spacing": 150,
+    "bandwidth": 500,
+    "uniform_dim": 9,
+    "smooth_radius": 300,
+    "boundary_alpha": 0.5,
+    "spatial_weight": 0.5
+  },
+  "published_per_block_ari_mean": 0.6849392938576063,
+  "final_config_whole_section_ari": 0.6581459461396237,
+  "final_config_whole_section_nmi": 0.7058432918889253
+}

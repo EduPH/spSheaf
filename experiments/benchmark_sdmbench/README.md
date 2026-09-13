@@ -24,23 +24,21 @@ Needs the MERFISH molecule table and the benchmark's own
 **Rank of twelve: 1st on NMI, 1st on homogeneity, 2nd on completeness**;
 mid-field (≈5th) on the three spatial-continuity metrics CHAOS, PAS and ASW.
 
-Pooled medians over all seeds and slices: NMI 0.628, HOM 0.638, COM 0.627,
-CHAOS 0.029, PAS 0.031, ASW −0.062. Next best on NMI is SCAN-IT at 0.565.
+Pooled medians over all seeds and slices (section input, 9 Sep 2026): NMI 0.651; next best on NMI is 0.565.
 
 > The ranking uses **pooled medians** because that is how the benchmark pools;
-> Table 1 of the paper reports the **20-seed mean**, 0.641. Same runs, two
+> Table 1 of the paper reports the **20-seed mean**, 0.655. Same runs, two
 > summary statistics.
 
-**Seed sensitivity** over 20 seeds × 5 slices: ARI 0.559 ± 0.008 (range
-0.538–0.564), NMI 0.641 ± 0.004, runtime 15.35 ± 0.21 s per slice.
+**Seed sensitivity** over 20 seeds × 5 slices: ARI 0.571 ± 0.000, NMI
+0.655 ± 0.000 (per-slice s.d. ≤ 0.001), about 30 s per slice.
 
 **Two metrics are excluded from the ranking, and `gt_calibration.py` is why.**
 Recomputed from molecule-level data through this code path, the *ground-truth
 partition itself* scores Moran's I 0.109 against 0.153–0.245 for the
 baselines — it ranks last on its own annotation. The absolute values reflect
 the benchmark's internal cell-expression preprocessing, which cannot be
-reproduced from molecules. Our domains match the ground truth closely (0.106
-against 0.109), so Moran's I and Geary's C are reported for reference and not
+reproduced from molecules. Our domains score 0.180 against the ground truth's 0.109, so Moran's I and Geary's C are reported for reference and not
 ranked. This is a property of the metric, not of any method.
 
-Feeds Extended Data Fig. 1.
+Feeds Extended Data Fig. 2.

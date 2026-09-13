@@ -27,10 +27,10 @@ Produced by `python -m experiments.atera.run_atera`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `breast_metrics.csv` | Sec 2.10: the breast section | `atera/output_atera_breast/metrics.csv` |
-| `breast_signature_metrics.csv` | Sec 2.10: signature scores per domain, breast | `atera/output_atera_breast/signature_metrics.csv` |
-| `cervical_metrics.csv` | Sec 2.10: the cervical section | `atera/output_atera_cervical/metrics.csv` |
-| `cervical_signature_metrics.csv` | Sec 2.10: signature scores per domain, cervical | `atera/output_atera_cervical/signature_metrics.csv` |
+| `breast_metrics.csv` | ATERA breast section (not in the manuscript) | `atera/output_atera_breast/metrics.csv` |
+| `breast_signature_metrics.csv` | ATERA breast, signature scores per domain (not in the manuscript) | `atera/output_atera_breast/signature_metrics.csv` |
+| `cervical_metrics.csv` | ATERA cervical section (not in the manuscript) | `atera/output_atera_cervical/metrics.csv` |
+| `cervical_signature_metrics.csv` | ATERA cervical, signature scores per domain (not in the manuscript) | `atera/output_atera_cervical/signature_metrics.csv` |
 
 
 ## brain_receptor/
@@ -54,6 +54,7 @@ Produced by `make merfish merfish-seeds merfish-loo-cv revision`.
 | `seed_sensitivity_per_run.csv` | Table 1: every (slice, seed) run behind the means | `benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_per_run.csv` |
 | `all_slices_results.csv` | Sec 2.2: the headline five-slice run at the transferred configuration | `merfish/output_merfish/all_slices_results.csv` |
 | `loo_cv_table.csv` | Methods 4.12/4.14: leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s) | `merfish/loo_cv_table.csv` |
+| `multislice.json` | Sec 2.6 and ED Fig. 3: cross-slice label agreement (69.8 %, 63.1-78.5 %) and the self-alignment bound (91.5 %); `make panels-multislice` | `merfish/panels/multislice.json` |
 | `reference_field.csv` | Sec 2.9: what the coordinate reference does to the boundary field -- the localization/partition dissociation, and the field's width after the median normalization the weighting applies | `merfish/reference_field.csv` |
 | `boundary_eval_*.csv` | memo 3: the boundary field scored directly, without clustering | `merfish/boundary_eval_MERFISH_*.csv` |
 | `sheaf_ablation_*.csv` | memo 2: sheaf against the simpler local-subspace controls | `merfish/sheaf_ablation_MERFISH_*.csv` |
@@ -66,9 +67,10 @@ Produced by `make osmfish osmfish-all osmfish-insample`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
+| `tune_cv.json` | osmFISH leave-one-spatial-block-out (not in the manuscript since 12 Sep 2026; kept as the record of the check) | `osmfish/tune_cv.json` |
 | `osmfish_metrics.csv` | Table 2, osmFISH transferred row | `osmfish/output_osmFISH_boundary/osmfish_metrics.csv` |
 | `osmfish_sweep.csv` | Table 2, osmFISH in-sample row, and ED Fig. 5 row 1 (the 108+24 grid) | `osmfish/output_osmFISH_boundary/osmfish_sweep.csv` |
-| `osmfish_metrics_tissue_reference.csv` | Table 2, osmFISH tissue-reference row | `osmfish/tissue_reference/osmfish_metrics.csv` |
+| `osmfish_metrics_tissue_reference.csv` | osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 2 tissue row is the argmax in osmfish_sweep.csv) | `osmfish/tissue_reference/osmfish_metrics.csv` |
 | `resolution.csv` | Sec 2.9 and Methods: does domain WIDTH predict which domains are lost | `osmfish/resolution.csv` |
 | `elongation.csv` | Sec 2.9: are ELONGATED domains lost, and is alpha_s the cause | `osmfish/elongation.csv` |
 | `alpha_sweep.csv` | Methods (osmFISH spatial weight): ARI and NMI at alpha_s in {0, 0.25, 0.5, 0.75}. Written by elongation.py only since 11 Sep 2026 -- it used to print these four numbers and save nothing, so re-run `make osmfish-elongation` if the copy here predates that | `osmfish/alpha_sweep.csv` |

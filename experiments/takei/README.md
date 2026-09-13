@@ -5,8 +5,8 @@ a smoothed vector of measured intensities rather than a molecule count. Same
 grid, graph, stalks, restriction maps, disagreement and clustering as
 everywhere else. δ = 0.55 µm, h = 0.8 µm, 5 zones. No `make` targets.
 
-`README_phase_notes.md` keeps the development history, including a caveat
-about sample size worth reading before quoting anything.
+`docs/dev-notes/takei_phase_notes.md` keeps the development history, including a caveat
+about sample size worth reading before quoting anything. k_nbrs = 40 in both runs; the DNA run used the tissue coordinate reference, the IF run (10 Sep 2026) the local one (Table 4).
 
 ---
 
@@ -33,9 +33,9 @@ chr19 is the most interior (radial 0.484, and the most gene-dense at 12.9);
 chr1 and chr2 the most peripheral (0.637, 0.611).
 
 > The r = 0.91 needs the full sample. At 22 nuclei the same correlation was
-> 0.37 and not significant. `README_phase_notes.md` records this.
+> 0.37 and not significant.
 
-Feeds Extended Data Figs. 7 and 8.
+Feeds Extended Data Fig. 8.
 
 ---
 
@@ -73,4 +73,4 @@ Pooling all nuclei gives 5 zone archetypes: constitutive heterochromatin,
 repressive, baseline interior, lamina-associated, and active / nuclear
 speckle.
 
-Feeds Extended Data Figs. 9 and 10.
+Feeds Extended Data Fig. 9 (`figures/ed_ifheat_panels.py` draws it from `certification_zone_table.csv` and the archetype tables; `make_zone_heatmaps.py` writes those).

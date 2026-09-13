@@ -42,7 +42,7 @@ than the signalling interface reported by the original authors.
 protein-state domains (7 domains, coherence 0.955 on the protein panel; 10
 domains, 0.946 on the 220-gene panel). It was abandoned — it compared
 unfavourably to the authors' own clusters at NMI ≈ 0.02 — and
-`PECAB_REFRAME_NOTE.md` records why. The continuous framing is the published
+`docs/dev-notes/pecab_reframe_note.md` records why. The continuous framing is the published
 one.
 
-Feeds Extended Data Fig. 11.
+Feeds Extended Data Fig. 10. The run predates the local coordinate reference and used the tissue reference; k_nbrs = 40 (Table 4).
