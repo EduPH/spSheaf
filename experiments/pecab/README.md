@@ -45,4 +45,4 @@ unfavourably to the authors' own clusters at NMI ≈ 0.02 — and
 `docs/dev-notes/pecab_reframe_note.md` records why. The continuous framing is the published
 one.
 
-Feeds Extended Data Fig. 10. The run predates the local coordinate reference and used the tissue reference; k_nbrs = 40 (Table 4).
+Feeds Extended Data Fig. 8, at the tissue reference; k_nbrs = 40 (Supplementary Table 3).

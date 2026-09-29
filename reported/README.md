@@ -10,7 +10,7 @@ sweeps without first re-running days of compute.
 
 The competitors' tables are NOT here; they live where they always did, under
 `benchmarks/segfree/results/`, alongside the per-cell label CSVs that the
-figures Hungarian-match. The two places together are the provenance of Table 2.
+figures Hungarian-match. The two places together are the provenance of Table 1.
 
 Refresh after a run, or check for drift, with
 
@@ -39,8 +39,8 @@ Produced by `python -m experiments.brain_receptor.run_brain_receptor`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `metrics.csv` | ED Fig. 7 (scale): the receptor-panel section | `brain_receptor/output_brain_receptor/metrics.csv` |
-| `metrics_vs_allen.csv` | ED Fig. 7: agreement with the Allen reference annotation | `brain_receptor/output_brain_receptor/metrics_vs_allen.csv` |
+| `metrics.csv` | ED Fig. 5 (scale): the receptor-panel section | `brain_receptor/output_brain_receptor/metrics.csv` |
+| `metrics_vs_allen.csv` | ED Fig. 5: agreement with the Allen reference annotation | `brain_receptor/output_brain_receptor/metrics_vs_allen.csv` |
 
 
 ## merfish/
@@ -49,13 +49,18 @@ Produced by `make merfish merfish-seeds merfish-loo-cv revision`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `seed_sensitivity_per_slice.csv` | Table 1 and ED Fig. 1: per-slice ARI, mean over 20 seeds | `benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_per_slice.csv` |
+| `seed_sensitivity_per_slice.csv` | Table 1 and ED Fig. 1c: per-slice ARI, mean over 20 seeds | `benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_per_slice.csv` |
 | `seed_sensitivity_summary.csv` | Table 1: the seed spread quoted in the caption | `benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_summary.csv` |
 | `seed_sensitivity_per_run.csv` | Table 1: every (slice, seed) run behind the means | `benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_per_run.csv` |
-| `all_slices_results.csv` | Sec 2.2: the headline five-slice run at the transferred configuration | `merfish/output_merfish/all_slices_results.csv` |
-| `loo_cv_table.csv` | Methods 4.12/4.14: leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s) | `merfish/loo_cv_table.csv` |
-| `multislice.json` | Sec 2.6 and ED Fig. 3: cross-slice label agreement (69.8 %, 63.1-78.5 %) and the self-alignment bound (91.5 %); `make panels-multislice` | `merfish/panels/multislice.json` |
-| `reference_field.csv` | Sec 2.9: what the coordinate reference does to the boundary field -- the localization/partition dissociation, and the field's width after the median normalization the weighting applies | `merfish/reference_field.csv` |
+| `all_slices_results.csv` | Results 2.2: the five-slice run at the MERFISH configuration | `merfish/output_merfish/all_slices_results.csv` |
+| `loo_cv_table.csv` | Methods (selection rules): leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s) | `merfish/loo_cv_table.csv` |
+| `multislice.json` | Supplementary Fig. 2: cross-slice label agreement (69.8 %, 63.1-78.5 %) and the self-alignment bound (91.5 %); `make panels-multislice` | `merfish/panels/multislice.json` |
+| `loo_cv_table_union.csv` | Table 1 and Fig. 2b: the 27-configuration grid at both coordinate references (54 rows per slice), the table the three selection rules are applied to (`make matched-selection-union`) | `merfish/loo_cv_table_union.csv` |
+| `k_selection_*.csv` | Choosing k (Results, ED k-selection figure): silhouette, grid-phase stability, the seed control and ARI against the annotation for k = 2-16 on each of the five slices, at the MERFISH defaults | `merfish/k_selection_MERFISH_*.csv` |
+| `k_split_events.csv` | Structure below the annotation, Supplementary Table 4: every division of an annotated domain at k = 8, 9, 10 on the five slices (`make merfish-k-split`) | `merfish/k_split_events.csv` |
+| `k_split_pairs.csv` | Fig. 4 (ksplit): correlation of the per-gene difference vectors between divisions of the same domain on different slices | `merfish/k_split_pairs.csv` |
+| `k_split_across_k.csv` | Whether a division at k = 9 is inherited from k = 8 or persists to k = 10 | `merfish/k_split_across_k.csv` |
+| `reference_field.csv` | Results 2.3 and Methods: what the coordinate reference does to the boundary field -- the localization/partition dissociation, and the field's width after the median normalization the weighting applies | `merfish/reference_field.csv` |
 | `boundary_eval_*.csv` | memo 3: the boundary field scored directly, without clustering | `merfish/boundary_eval_MERFISH_*.csv` |
 | `sheaf_ablation_*.csv` | memo 2: sheaf against the simpler local-subspace controls | `merfish/sheaf_ablation_MERFISH_*.csv` |
 | `k_sensitivity_*.csv` | memo 5: k swept under label-free and label-dependent criteria | `merfish/k_sensitivity_MERFISH_*.csv` |
@@ -68,14 +73,14 @@ Produced by `make osmfish osmfish-all osmfish-insample`.
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
 | `tune_cv.json` | osmFISH leave-one-spatial-block-out (not in the manuscript since 12 Sep 2026; kept as the record of the check) | `osmfish/tune_cv.json` |
-| `osmfish_metrics.csv` | Table 2, osmFISH transferred row | `osmfish/output_osmFISH_boundary/osmfish_metrics.csv` |
-| `osmfish_sweep.csv` | Table 2, osmFISH in-sample row, and ED Fig. 5 row 1 (the 108+24 grid) | `osmfish/output_osmFISH_boundary/osmfish_sweep.csv` |
-| `osmfish_metrics_tissue_reference.csv` | osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 2 tissue row is the argmax in osmfish_sweep.csv) | `osmfish/tissue_reference/osmfish_metrics.csv` |
-| `resolution.csv` | Sec 2.9 and Methods: does domain WIDTH predict which domains are lost | `osmfish/resolution.csv` |
-| `elongation.csv` | Sec 2.9: are ELONGATED domains lost, and is alpha_s the cause | `osmfish/elongation.csv` |
-| `alpha_sweep.csv` | Methods (osmFISH spatial weight): ARI and NMI at alpha_s in {0, 0.25, 0.5, 0.75}. Written by elongation.py only since 11 Sep 2026 -- it used to print these four numbers and save nothing, so re-run `make osmfish-elongation` if the copy here predates that | `osmfish/alpha_sweep.csv` |
-| `tune_attribute.csv` | Methods: which transferred change costs the accuracy (8 runs) | `osmfish/tune_attribute.csv` |
-| `seed_sensitivity.csv` | Table 2 caption: the osmFISH seed spread | `osmfish/seed_sensitivity.csv` |
+| `osmfish_metrics.csv` | ED Table 1, osmFISH transferred row | `osmfish/output_osmFISH_boundary/osmfish_metrics.csv` |
+| `osmfish_sweep.csv` | Table 1, osmFISH row, and ED Fig. 2 row 1 (the 108+24 grid) | `osmfish/output_osmFISH_boundary/osmfish_sweep.csv` |
+| `osmfish_metrics_tissue_reference.csv` | osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 1's osmFISH value is the tissue-reference argmax in osmfish_sweep.csv) | `osmfish/tissue_reference/osmfish_metrics.csv` |
+| `resolution.csv` | Not in the submitted version (docs/notes/osmfish_diagnostics_unreported.md, private repo): does domain WIDTH predict which domains are lost | `osmfish/resolution.csv` |
+| `elongation.csv` | Not in the submitted version: are ELONGATED domains lost, and is alpha_s the cause | `osmfish/elongation.csv` |
+| `alpha_sweep.csv` | Not in the submitted version: ARI and NMI at alpha_s in {0, 0.25, 0.5, 0.75}. Written by elongation.py only since 11 Sep 2026 -- it used to print these four numbers and save nothing, so re-run `make osmfish-elongation` if the copy here predates that | `osmfish/alpha_sweep.csv` |
+| `tune_attribute.csv` | Not in the submitted version: which transferred change costs the accuracy (8 runs) | `osmfish/tune_attribute.csv` |
+| `seed_sensitivity.csv` | Table 1 caption: the osmFISH seed spread | `osmfish/seed_sensitivity.csv` |
 
 
 ## pecab/
@@ -84,11 +89,11 @@ Produced by `make panels-pecab`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `Rep1_summary.csv` | ED Fig. 10 (PECAb): replicate 1 | `pecab/output_pecab_signaling_Rep1/summary.csv` |
-| `Rep1_marker_corr.csv` | ED Fig. 10: marker correlations, replicate 1 | `pecab/output_pecab_signaling_Rep1/marker_corr.csv` |
-| `Rep1_emt_concordance.csv` | ED Fig. 10: EMT concordance | `pecab/output_pecab_signaling_Rep1/emt_concordance.csv` |
-| `Rep2_summary.csv` | ED Fig. 10: replicate 2 | `pecab/output_pecab_signaling_Rep2/summary.csv` |
-| `Rep2_marker_corr.csv` | ED Fig. 10: the r = 0.94 cross-replicate agreement | `pecab/output_pecab_signaling_Rep2/marker_corr.csv` |
+| `Rep1_summary.csv` | ED Fig. 8 (PECAb): replicate 1 | `pecab/output_pecab_signaling_Rep1/summary.csv` |
+| `Rep1_marker_corr.csv` | ED Fig. 8: marker correlations, replicate 1 | `pecab/output_pecab_signaling_Rep1/marker_corr.csv` |
+| `Rep1_emt_concordance.csv` | ED Fig. 8: EMT concordance | `pecab/output_pecab_signaling_Rep1/emt_concordance.csv` |
+| `Rep2_summary.csv` | ED Fig. 8: replicate 2 | `pecab/output_pecab_signaling_Rep2/summary.csv` |
+| `Rep2_marker_corr.csv` | ED Fig. 8: the r = 0.94 cross-replicate agreement | `pecab/output_pecab_signaling_Rep2/marker_corr.csv` |
 
 
 ## spacetx/
@@ -97,10 +102,20 @@ Produced by `make spacetx-all`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `MERFISH_Allen_Prototype_metrics.csv` | Table 2, Allen transferred row (one row per k-means seed) | `spacetx/MERFISH_Allen_Prototype/metrics.csv` |
-| `MERFISH_Allen_Prototype_sweep.csv` | Table 2, Allen in-sample row, and ED Fig. 5 row 2 (the 162 grid) | `spacetx/MERFISH_Allen_Prototype/sweep.csv` |
-| `BARISTASeq_metrics.csv` | Table 2, BaristaSeq transferred row | `spacetx/BARISTASeq/metrics.csv` |
-| `BARISTASeq_sweep.csv` | Table 2, BaristaSeq in-sample row, and ED Fig. 5 row 3 (the 162 grid) | `spacetx/BARISTASeq/sweep.csv` |
+| `MERFISH_Allen_Prototype_metrics.csv` | ED Table 1, Allen transferred row (one row per k-means seed) | `spacetx/MERFISH_Allen_Prototype/metrics.csv` |
+| `MERFISH_Allen_Prototype_sweep.csv` | Table 1, Allen row, and ED Fig. 2 row 2 (the 162 grid) | `spacetx/MERFISH_Allen_Prototype/sweep.csv` |
+| `BARISTASeq_metrics.csv` | ED Table 1, BaristaSeq transferred row | `spacetx/BARISTASeq/metrics.csv` |
+| `BARISTASeq_sweep.csv` | Table 1, BaristaSeq row, and ED Fig. 2 row 3 (the 162 grid) | `spacetx/BARISTASeq/sweep.csv` |
+| `sheaf_ablation_*.csv` | Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx section at its selected configuration (`make spacetx-ablation`; tissue reference, so present under reported/tissue/) | `spacetx/sheaf_ablation_*.csv` |
+
+
+## synthetic/
+
+Produced by `make k-selection`.
+
+| file | supports | copied from (under the results root) |
+| --- | --- | --- |
+| `k_selection_*.csv` | Choosing k: the annotation-free criteria against k on synthetic tissue of known K, two designs x two data seeds (figures/ed_kselection.py) | `synthetic/k_selection_*.csv` |
 
 
 ## takei/
@@ -109,13 +124,13 @@ Produced by `python -m experiments.takei.make_zone_heatmaps (and takei.run_takei
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `zone_mark_heatmap.csv` | ED Fig. 9b: zone-by-mark composition, row-centred | `takei/output_takei_if/zone_mark_heatmap.csv` |
-| `zone_archetype_sizes.csv` | ED Fig. 9b: how many zones fall in each archetype | `takei/output_takei_if/zone_archetype_sizes.csv` |
-| `zone_archetype_assignment.csv` | ED Fig. 9b: (nucleus, zone) -> archetype, the assignment behind the panel | `takei/output_takei_if/zone_archetype_assignment.csv` |
-| `if_certification_summary.csv` | ED Fig. 9: the IF certification summary | `takei/output_takei_if/certification_summary.csv` |
-| `if_certification_zone_table.csv` | ED Fig. 9: per-zone certification | `takei/output_takei_if/certification_zone_table.csv` |
-| `dna_certification_per_nucleus.csv` | ED Fig. 8 (DNA territories): per-nucleus certification | `takei/output_takei_feat_full1/certification_per_nucleus.csv` |
-| `dna_certification_radial.csv` | ED Fig. 8: the radial profile | `takei/output_takei_feat_full1/certification_radial.csv` |
-| `dna_radial_vs_genedensity.csv` | ED Fig. 8: radial position against gene density | `takei/output_takei_feat_full1/radial_vs_genedensity.csv` |
-| `dna_summary.csv` | ED Fig. 8: the run summary | `takei/output_takei_feat_full1/summary.csv` |
+| `zone_mark_heatmap.csv` | ED Fig. 7b: zone-by-mark composition, row-centred | `takei/output_takei_if/zone_mark_heatmap.csv` |
+| `zone_archetype_sizes.csv` | ED Fig. 7b: how many zones fall in each archetype | `takei/output_takei_if/zone_archetype_sizes.csv` |
+| `zone_archetype_assignment.csv` | ED Fig. 7b: (nucleus, zone) -> archetype, the assignment behind the panel | `takei/output_takei_if/zone_archetype_assignment.csv` |
+| `if_certification_summary.csv` | ED Fig. 7: the IF certification summary | `takei/output_takei_if/certification_summary.csv` |
+| `if_certification_zone_table.csv` | ED Fig. 7: per-zone certification | `takei/output_takei_if/certification_zone_table.csv` |
+| `dna_certification_per_nucleus.csv` | ED Fig. 6 (DNA territories): per-nucleus certification | `takei/output_takei_feat_full1/certification_per_nucleus.csv` |
+| `dna_certification_radial.csv` | ED Fig. 6: the radial profile | `takei/output_takei_feat_full1/certification_radial.csv` |
+| `dna_radial_vs_genedensity.csv` | ED Fig. 6: radial position against gene density | `takei/output_takei_feat_full1/radial_vs_genedensity.csv` |
+| `dna_summary.csv` | ED Fig. 6: the run summary | `takei/output_takei_feat_full1/summary.csv` |
 

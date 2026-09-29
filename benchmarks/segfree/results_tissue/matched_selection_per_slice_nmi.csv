@@ -1,0 +1,21 @@
+method,slice,held_out,per_slice_argmax
+Points2Regions,0.04,0.4410,0.5422
+Points2Regions,0.09,0.5331,0.5843
+Points2Regions,0.14,0.4807,0.5732
+Points2Regions,0.19,0.5561,0.6437
+Points2Regions,0.24,0.5903,0.6512
+FICTURE,0.04,0.3334,0.3497
+FICTURE,0.09,0.4188,0.4188
+FICTURE,0.14,0.4520,0.4525
+FICTURE,0.19,0.4757,0.4757
+FICTURE,0.24,0.4798,0.4798
+SSAM (de novo),0.04,0.4856,0.5610
+SSAM (de novo),0.09,0.4919,0.5518
+SSAM (de novo),0.14,0.5486,0.5735
+SSAM (de novo),0.19,0.5765,0.6247
+SSAM (de novo),0.24,0.5446,0.5733
+spSheaf,0.04,0.6239,0.6342
+spSheaf,0.09,0.6655,0.6930
+spSheaf,0.14,0.6068,0.6068
+spSheaf,0.19,0.7151,0.7168
+spSheaf,0.24,0.6460,0.6460

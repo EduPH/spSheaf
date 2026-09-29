@@ -66,6 +66,9 @@ SLICES = ["0.04", "0.09", "0.14", "0.19", "0.24"]
 #: rules the competitors are. The tracked copy under reported/ is read first;
 #: the live results tree second.
 def _spsheaf_table() -> Path:
+    import os
+    if os.environ.get("SPSHEAF_LOO_TABLE"):
+        return Path(os.environ["SPSHEAF_LOO_TABLE"])
     here = Path(__file__).resolve().parents[2]
     cands = [here / "reported" / "merfish" / "loo_cv_table.csv"]
     try:
@@ -86,7 +89,7 @@ def load_spsheaf(metric: str) -> dict:
         for r in csv.DictReader(fh):
             s = r["slice"].replace("MERFISH_", "").replace(".h5ad", "")
             key = (float(r["smooth_radius"]), float(r["boundary_alpha"]),
-                   float(r["spatial_weight"]))
+                   float(r["spatial_weight"]), r.get("reference", "local"))
             out.setdefault(key, {})[s] = float(r[metric.lower()])
     return out
 

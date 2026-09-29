@@ -46,3 +46,6 @@ docs/Manuscript-NatureMethods/
 /work/
 /output_sheaf_boundary/
 benchmarks/segfree/results/_to_delete/
+
+# --- figure snapshots kept per coordinate reference (local working copies)
+figures/out_*/

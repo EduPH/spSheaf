@@ -24,7 +24,7 @@ from scipy.spatial import cKDTree
 def build_kernel_fibers(mol, grid_spacing=15.0, bandwidth=25.0,
                         min_molecules=15, x_col="x_local", y_col="y_local",
                         z_col=None, z_spacing=None, z_bandwidth=None,
-                        block_size=None, verbose=True):
+                        block_size=None, grid_offset=None, verbose=True):
     """
     Construct Gaussian kernel-smoothed expression fibers on a regular grid.
 
@@ -59,6 +59,13 @@ def build_kernel_fibers(mol, grid_spacing=15.0, bandwidth=25.0,
     block_size : int or None
         Grid points processed per block in the 3D path (memory control).
         Defaults to 2000. Ignored in 2D.
+    grid_offset : tuple of float, optional
+        ``(dx, dy)`` added to the grid origin, in coordinate units. The default
+        origin is half a spacing inside the molecule extent; an offset shifts
+        the phase of the lattice without moving the data, so the same field is
+        sampled by a different set of fibers. Offsets of a fraction of
+        ``grid_spacing`` are the intended use
+        (``experiments/synthetic/k_selection.py``).
     verbose : bool
         Print grid statistics.
 
@@ -89,8 +96,14 @@ def build_kernel_fibers(mol, grid_spacing=15.0, bandwidth=25.0,
     # Regular grid covering the tissue extent
     x_min, x_max = mol_coords[:, 0].min(), mol_coords[:, 0].max()
     y_min, y_max = mol_coords[:, 1].min(), mol_coords[:, 1].max()
-    x_grid = np.arange(x_min + grid_spacing / 2, x_max, grid_spacing)
-    y_grid = np.arange(y_min + grid_spacing / 2, y_max, grid_spacing)
+    # The phase of the lattice is an arbitrary choice, not a property of the
+    # tissue, so it is settable: shifting it by a fraction of the spacing
+    # re-samples the same field into different fibers, which is the
+    # perturbation a stability criterion needs -- one that moves the DATA
+    # rather than the k-means initialisation.
+    ox, oy = (0.0, 0.0) if grid_offset is None else grid_offset
+    x_grid = np.arange(x_min + grid_spacing / 2 + ox, x_max, grid_spacing)
+    y_grid = np.arange(y_min + grid_spacing / 2 + oy, y_max, grid_spacing)
     xx, yy = np.meshgrid(x_grid, y_grid)
     grid_coords = np.column_stack([xx.ravel(), yy.ravel()])
 

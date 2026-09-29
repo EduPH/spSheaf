@@ -31,6 +31,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -63,9 +64,23 @@ def main():
     ap.add_argument("--tolerance", type=float, default=15.0)
     ap.add_argument("--no-controls", action="store_true",
                     help="skip the null-field controls (not recommended)")
+    ap.add_argument("--spatial-weight", type=float, default=0.5)
+    ap.add_argument("--cache-path", default=None,
+                    help="an npz in the MERFISH cache format (e.g. from "
+                         "experiments/spacetx/ablation_cache.py) instead of --slice")
+    ap.add_argument("--out", default=None, help="output CSV (default: results/merfish/...)")
     a = ap.parse_args()
 
-    c = _cache.load(a.slice)
+    if a.cache_path:
+        d = np.load(a.cache_path, allow_pickle=True)
+        c = {"grid": d["grid"], "fib": d["fib"].astype(float),
+             "fib_global": d["fib_global"].astype(float), "fib_local": d["fib_local"].astype(float),
+             "stalks": [s for s in d["stalks"].astype(float)],
+             "edges": [tuple(e) for e in d["edges"]],
+             "boundary_raw": d["boundary_raw"], "boundary_smooth": d["boundary_smooth"],
+             "gt_int": d["gt_int"], "gt_valid": d["gt_valid"]}
+    else:
+        c = _cache.load(a.slice)
     grid, edges, stalks = c["grid"], c["edges"], c["stalks"]
     gt, valid = c["gt_int"], c["gt_valid"]
     n = len(grid)
@@ -85,7 +100,7 @@ def main():
         aris, nmis = [], []
         for seed in range(a.seeds):
             lab = np.asarray(clustering.boundary_aware_clustering(
-                c["fib"], grid, field, edges, n_clusters=a.k, spatial_weight=0.5,
+                c["fib"], grid, field, edges, n_clusters=a.k, spatial_weight=a.spatial_weight,
                 boundary_alpha=0.5, n_pca=10, random_state=seed, verbose=False))
             lab, _ = clustering.spatial_cleanup(lab, edges, grid_coords=grid,
                                                 verbose=False)
@@ -119,7 +134,7 @@ def main():
             for seed in range(a.seeds):
                 lab = np.asarray(clustering.boundary_aware_clustering(
                     c["fib"], grid, field, edges, n_clusters=a.k,
-                    spatial_weight=0.5, boundary_alpha=alpha, n_pca=10,
+                    spatial_weight=a.spatial_weight, boundary_alpha=alpha, n_pca=10,
                     random_state=seed, verbose=False))
                 lab, _ = clustering.spatial_cleanup(lab, edges,
                                                     grid_coords=grid, verbose=False)
@@ -134,7 +149,7 @@ def main():
                   f"ARI={np.mean(aris):.3f} NMI={np.mean(nmis):.3f}")
 
     df = pd.DataFrame(rows).set_index("arm")
-    out = paths.results("merfish") / f"sheaf_ablation_{a.slice.replace('.h5ad','')}.csv"
+    out = Path(a.out) if a.out else paths.results("merfish") / f"sheaf_ablation_{a.slice.replace('.h5ad','')}.csv"
     df.to_csv(out)
     print(f"\n-> {out}")
 

@@ -40,7 +40,8 @@ SLICES = ["0.04", "0.09", "0.14", "0.19", "0.24"]
 # per-slice ARI under leave-one-slice-out for every method, and the two
 # selection rules of panel c; both read from matched_selection.py's output so
 # the figure cannot drift from the table.
-_MS = HERE.parent / "benchmarks" / "segfree" / "results"
+import os
+_MS = Path(os.environ.get("SPSHEAF_MS_DIR", HERE.parent / "benchmarks" / "segfree" / "results"))
 
 
 def _per_slice():
@@ -53,7 +54,8 @@ def _per_slice():
 
 def _rules():
     df = pd.read_csv(_MS / "matched_selection_ari.csv")
-    return {r.method.replace(" (de novo)", ""): (float(r.per_slice_argmax), float(r.loo_cv))
+    return {r.method.replace(" (de novo)", ""):
+            (float(r.per_slice_argmax), float(r.one_config), float(r.loo_cv))
             for r in df.itertuples()}
 
 
@@ -152,7 +154,7 @@ def legend_strip(path, gt_names):
 
 def panel_a(path):
     fig, ax = ss.panel(86, 44)
-    fig.subplots_adjust(left=0.10, right=0.755, top=0.96, bottom=0.17)
+    fig.subplots_adjust(left=0.135, right=0.755, top=0.96, bottom=0.17)
     x = range(len(SLICES))
     # labels are nudged apart where two methods end within 0.01 of each other
     dy = {"spSheaf": 7, "FICTURE": -6, "Points2Regions": 0, "SSAM": 0}
@@ -175,30 +177,31 @@ def panel_a(path):
 
 
 def panel_b(path):
+    """Mean ARI under the three selection rules the five slices allow, from
+    the permissive to the strict: per-slice argmax, one configuration chosen
+    by mean ARI and applied to all five (the rule of Table 2), and
+    leave-one-slice-out."""
     fig, ax = ss.panel(72, 44)
-    fig.subplots_adjust(left=0.16, right=0.62, top=0.96, bottom=0.17)
+    fig.subplots_adjust(left=0.16, right=0.64, top=0.96, bottom=0.26)
     dy = {"spSheaf": 0, "Points2Regions": 5, "FICTURE": -6, "SSAM": 5}
-    # SSAM's argmax (0.464) now sits just under Points2Regions' (0.510), so its
-    # left-hand label is pushed below the marker to keep the two apart.
     dyl = {"spSheaf": (3, 4), "Points2Regions": (3, 4), "FICTURE": (3, -9),
            "SSAM": (3, -9)}
-    for name, (a, b) in RULE.items():
+    for name, (a, b, c_) in RULE.items():
         c = ss.METHOD_COLORS[name]
         lead = name == "spSheaf"
-        ax.plot([0, 1], [a, b], marker="o", ms=3.2 if lead else 2.8,
+        ax.plot([0, 1, 2], [a, b, c_], marker="o", ms=3.2 if lead else 2.8,
                 lw=1.4 if lead else 1.1, color=c, zorder=3 if lead else 2)
         ax.annotate(f"{a:.3f}", (0, a), xytext=dyl[name],
                     textcoords="offset points", color=c, fontsize=TICK,
                     va="bottom" if dyl[name][1] > 0 else "top", ha="left")
-        ax.annotate(f"{name} {b:.3f}", (1, b), xytext=(6, dy[name]),
+        ax.annotate(f"{name} {c_:.3f}", (2, c_), xytext=(6, dy[name]),
                     textcoords="offset points", color=c, fontsize=TICK, va="center")
-    ax.set_xticks([0, 1])
-    ax.set_xticklabels(["per-slice\nargmax", "held-out\n(matched)"])
-    ax.set_xlim(-0.14, 1.14)
+    ax.set_xticks([0, 1, 2])
+    ax.set_xticklabels(["per-slice\nargmax", "one\nconfiguration", "held-out\n(matched)"])
+    ax.set_xlim(-0.15, 2.15)
     ax.set_ylim(0.08, 0.66)
     ax.set_ylabel("mean ARI")
-    ax.spines["bottom"].set_visible(False)
-    ax.tick_params(axis="x", length=0)
+    ax.set_xlabel("selection rule")
     ss.save_panel(fig, path)
 
 
@@ -245,14 +248,14 @@ def panel_d(path):
 
 
 FIG2 = Layout(
-    name="fig2", width_mm=180.0, height_mm=135.0,
+    name="fig2", width_mm=180.0, height_mm=138.0,
     panels=[
         Panel("a", PANELS / "f2maps.pdf", x=8, y=4, label_dx=-4, label_dy=-2),
         Panel(None, PANELS / "f2leg.pdf", x=8, y=40),
-        Panel("b", PANELS / "f2a.pdf", x=8,   y=47, label_dx=-4, label_dy=-5),
-        Panel("c", PANELS / "f2b.pdf", x=101, y=47, label_dx=-4, label_dy=-5),
-        Panel("d", PANELS / "f2c.pdf", x=8,   y=94, label_dx=-4, label_dy=-5),
-        Panel("e", PANELS / "f2d.pdf", x=101, y=94, label_dx=-4, label_dy=-5),
+        Panel("b", PANELS / "f2a.pdf", x=8,   y=50, label_dx=-4, label_dy=-5),
+        Panel("c", PANELS / "f2b.pdf", x=101, y=50, label_dx=-4, label_dy=-5),
+        Panel("d", PANELS / "f2c.pdf", x=8,   y=97, label_dx=-4, label_dy=-5),
+        Panel("e", PANELS / "f2d.pdf", x=101, y=97, label_dx=-4, label_dy=-5),
     ],
 )
 

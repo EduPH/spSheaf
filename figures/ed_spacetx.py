@@ -93,6 +93,21 @@ def _matched(pred, gti, valid):
     return hungarian_match_labels(contig.astype(int), gti, valid)
 
 
+def _grey_unsupported(lab, gti, valid, who=""):
+    """A Hungarian partner is forced: with as many clusters as annotated
+    classes every cluster receives a label, even one that shares no cell with
+    it. Such a cluster is drawn as unmatched (grey) rather than under a
+    colour it does not contain."""
+    lab = lab.copy()
+    for c in range(int(gti.max()) + 1):
+        m = lab == c
+        if m.any() and not (m & valid & (gti == c)).any():
+            print(f"  {who}: cluster matched to class {c} shares no cell with it "
+                  f"({m.sum()} cells) -> drawn grey")
+            lab[m] = -1
+    return lab
+
+
 def _competitors(ds, gti, valid):
     seg = _results("segfree", f"spacetx_{ds}")
     p2r = json.loads((seg / "metrics_p2r.json").read_text())["best"]
@@ -114,7 +129,7 @@ def _competitors(ds, gti, valid):
                            ("SSAM", f"labels_ssam_best_sweep{ssam_tag}.csv", ssam_ari),
                            ("FICTURE", "labels_ficture_best.csv", fic_best.ARI)]:
         lab = pd.read_csv(seg / csv)["pred"].values
-        out.append((name, _matched(lab, gti, valid), float(ari)))
+        out.append((name, _grey_unsupported(_matched(lab, gti, valid), gti, valid, name), float(ari)))
     return out
 
 
@@ -146,9 +161,17 @@ def row_panel(ds, path, *, height_mm, cell_s=1.2):
     grid, field = de["grid_coords"], de["boundary_smooth"]
     cols = [("annotation", "cells", gti, None),
             ("sheaf field $\\tilde B$ (rank)", "field", field, None),
-            ("spSheaf", "cells", de["cell_pred_matched"], me["metrics"]["ari"])]
+            ("spSheaf", "cells", _grey_unsupported(de["cell_pred_matched"], gti, valid, "spSheaf"),
+             me["metrics"]["ari"])]
     for name, lab, ari in _competitors(ds, gti, valid):
         cols.append((name, "cells", lab, ari))
+    # optional: the same configuration one domain below the annotated count
+    # (BaristaSeq, where the 32-cell L1 is recovered by no method)
+    if _results("spacetx", ds, "panels", "spsheaf_k5.npz").exists():
+        dk, mk = _load_spsheaf(ds, "spsheaf_k5")
+        cols.append(("spSheaf, $k=5$", "cells",
+                     _grey_unsupported(dk["cell_pred_matched"], gti, valid, "spSheaf k=5"),
+                     mk["metrics"]["ari"]))
     w = 180 - 16
     fig, axes = ss.panel_grid(w, height_mm, 1, len(cols))
     fig.subplots_adjust(left=0.005, right=0.995, top=0.80, bottom=0.02, wspace=0.05)

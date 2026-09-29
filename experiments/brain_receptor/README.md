@@ -43,7 +43,7 @@ and correspondence with known anatomy are what can be checked.
 grid points, 96.8 % overlap): ARI 0.264, NMI 0.460; after merging to matched
 divisions, accuracy 0.622, ARI 0.425.
 
-> The manuscript reports these (ED Fig. 7 caption) as a reference rather than
+> The manuscript reports these (ED Fig. 5 caption) as a reference rather than
 > a benchmark: the registration is a rigid AP-plane match, so the scores
 > confound domain quality with registration error.
 
@@ -53,4 +53,4 @@ divisions, accuracy 0.622, ARI 0.425.
 ~9 mm field, so the domains are near-columnar and 3D adds no biology here.
 Not in the manuscript.
 
-Feeds Extended Data Fig. 7b–d. The run predates the local coordinate reference and used the tissue reference (Table 4).
+Feeds Extended Data Fig. 5b–d, at the tissue reference (Supplementary Table 3).

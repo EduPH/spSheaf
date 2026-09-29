@@ -50,18 +50,28 @@ make spacetx-segfree SPACETX=<section>; make spacetx-ficture SPACETX=<section>
 
 # tables (from the tracked metric files; no competitor run needed)
 make matched-selection        # results/matched_selection_{ari,nmi}.csv and per-slice: the three MERFISH rules
+make matched-selection-union  # results_union/: the same with spSheaf's grid at both references (54 configurations) -- Table 1, Fig. 2b
 make benchmark-table          # results/benchmark_table.csv: every whole-section value with its rule
 make benchmark-table-check
 ```
 
+`results/` holds the competitors' metric files and labels and the matched
+selection over spSheaf's 27-configuration local-reference grid;
+`results_union/` the matched selection over the 54-configuration grid at
+both references (the paper's Table 1 and Fig. 2b; `SPSHEAF_MS_DIR` points
+`figures/fig2_manuscript.py` at it); `results_tissue/` the same restricted to
+the tissue reference.
+
 Environment knobs for SSAM: `SSAM_NORMALIZATION=sctransform|builtin`,
 `SSAM_OUTLIER=on|off`, `SSAM_RESOLUTION(S)`, `SSAM_TAG`, `SSAM_NCORES`.
 
-## Results (ARI; Table 2 and Fig. 2c)
+## Results (ARI; Table 1 and Fig. 2c)
 
 | | MERFISH per-slice argmax / one config / held-out | osmFISH | Allen | BaristaSeq |
 |---|---|---|---|---|
-| spSheaf | 0.582 / 0.571 / 0.552 | 0.658 (0.673 tissue ref.) | 0.665 (0.754) | 0.749 (0.757) |
+| spSheaf, argmax over both references | 0.584 / 0.571 / 0.552 | 0.673 | 0.754 | 0.757 |
+| spSheaf, tissue reference only (the default) | 0.564 / 0.548 / 0.540 | 0.673 | 0.754 | 0.757 |
+| spSheaf, local reference only | 0.582 / 0.571 / 0.552 | 0.658 | 0.665 | 0.749 |
 | Points2Regions | 0.510 / 0.457 / 0.388 | 0.432 | 0.684 | 0.733 |
 | SSAM | 0.464 / 0.401 / 0.343 | 0.729 | 0.410 | 0.738 |
 | FICTURE | 0.353 / 0.342 / 0.342 | 0.465 | 0.475 | 0.631 |

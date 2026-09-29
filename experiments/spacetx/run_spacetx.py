@@ -55,7 +55,7 @@ def build_parser():
                    help="alpha_b: strength of the boundary down-weighting")
     p.add_argument("--reference", choices=("local", "tissue"), default=None,
                    help="coordinate reference for the stalk sections; default: "
-                        "SPSHEAF_REFERENCE, else the package default (local)")
+                        "SPSHEAF_REFERENCE, else the package default (tissue)")
     p.add_argument("--n-clusters", type=int, default=None, help="default: number of annotation classes")
     p.add_argument("--register-radius", type=float, default=10.0, help="um, cell radius for the composition score")
     p.add_argument("--no-register", action="store_true", help="centroid alignment only (not recommended)")

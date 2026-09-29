@@ -46,9 +46,15 @@ BASE = dict(grid_spacing=150, bandwidth=500, smooth_radius=300, uniform_dim=9)
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--n-clusters", type=int, default=11)
+    ap.add_argument("--grid-spacing", type=float, default=BASE["grid_spacing"])
+    ap.add_argument("--bandwidth", type=float, default=BASE["bandwidth"])
+    ap.add_argument("--smooth-radius", type=float, default=BASE["smooth_radius"])
+    ap.add_argument("--uniform-dim", type=int, default=BASE["uniform_dim"])
     ap.add_argument("--alphas", type=float, nargs="+",
                     default=[0.0, 0.25, 0.5, 0.75])
     a = ap.parse_args()
+    cfg = dict(grid_spacing=a.grid_spacing, bandwidth=a.bandwidth,
+               smooth_radius=a.smooth_radius, uniform_dim=a.uniform_dim)
 
     root = paths.raw("osmfish")
     mol = load_osmfish_molecules(str(root / "mRNA_coords_raw_counting.hdf5"))
@@ -61,7 +67,7 @@ def main():
         res = pipeline.run_single_slice(
             mol=mol, slice_name=SLICE_NAME, n_clusters=a.n_clusters,
             k_graph=6, k_nbrs=50, spatial_weight=alpha, boundary_alpha=0.5,
-            cleanup=True, verbose=False, **BASE)
+            cleanup=True, verbose=False, **cfg)
         m, pred, coords_aligned, _, _ = evaluate_at_cell_level(
             res["grid_coords"], res["labels"], cell_coords, cell_gt,
             verbose=False)

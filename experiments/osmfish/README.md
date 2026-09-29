@@ -14,11 +14,11 @@ Inputs: `data/raw/osmfish/mRNA_coords_raw_counting.hdf5`,
 ## Run
 
 ```bash
-make osmfish                 # the reported run (seed 42): Fig 3 and its panel dump
+make osmfish                 # the local-reference run (seed 42): Fig 3 and its panel dump
 make osmfish-seeds           # 20 initializations at the same configuration
 make osmfish-diagnose        # are the two missed layers separable at all? (supervised test, Methods 4.10)
-make osmfish-elongation      # alpha_s sweep, per-domain recall, elongation: ED 4
-make osmfish-resolution      # domain width vs the kernel's mixing extent: ED 4b
+make osmfish-elongation      # alpha_s sweep, per-domain recall, elongation (not in the submitted version)
+make osmfish-resolution      # domain width vs the kernel mixing extent (not in the submitted version)
 make osmfish-attribute       # eight-corner grid: cost of each departure from the MERFISH values
 make osmfish-all             # all of the above in order
 make osmfish-insample        # 108-configuration grid, local reference (hours, resumable)
@@ -26,24 +26,31 @@ make osmfish-insample-tissue # the same grid with the tissue reference
 python -m experiments.osmfish.field_at_boundaries   # the field at layer interfaces vs interiors
 ```
 
-Configuration (Table 4): δ 150 px (9.8 µm), h 500 px (32.5 µm), σ_s 300 px
-(19.5 µm), d = 9, α_s 0.5, local reference — the argmax of the 108 grid.
+Configuration in the paper (Supplementary Table 2): the argmax of the 2 × 108
+grid, which is at the tissue reference — δ 150 px (9.8 µm), h 300 px
+(19.5 µm), σ_s 900 px (58.5 µm), d = 9, α_s 0.3 — ARI 0.673 ± 0.001 over
+seeds. The local-reference argmax (h 32.5 µm, σ_s 19.5 µm, α_s 0.5) is 0.658
+± 0.013. `make osmfish-seeds` and `make osmfish-elongation` take the same
+scale flags as `run_osmFISH.py` (`--bandwidth`, `--smooth-radius`,
+`--spatial-weight`, `--uniform-dim`), so either configuration can be re-run;
+the tissue-reference runs need `SPSHEAF_REFERENCE=tissue` (the default) and
+their tables are under `../../reported/tissue/osmfish/`.
 
 ## Results (in the paper)
 
-- ARI **0.658**, NMI **0.706** (3,716 / 4,839 cells); 20 seeds 0.648 ± 0.012,
-  median 0.653. Tissue-reference argmax 0.673 / 0.709. SSAM reaches 0.729 at
-  the best of its 144; none of spSheaf's 216 configurations does.
-- Two layers are missed at every setting. Layer 3–4 is 73 µm wide against
-  ±32.5 µm of kernel mixing, but narrowing h to 19.5 µm leaves its recall at 0
-  (ARI 0.658 → 0.576); a supervised classifier on the cell-by-gene matrix
-  separates it from Layer 4 at balanced accuracy 0.773 ± 0.081 and Layer 2–3
-  lateral from medial at 0.707 ± 0.071. The panel, not the resolution, binds.
-- α_s ∈ {0, 0.25, 0.5, 0.75}: ARI 0.609, 0.619, 0.658, 0.593; Layer 2–3
-  lateral appears only at 0.75, where Layer 4 and Layer 2–3 medial lose 0.17
-  and 0.23 of recall.
-- The smoothed field at layer interfaces is 0.72× its within-domain mean; the
-  two interfaces bounding the missed layers sit at 0.82×.
+- ARI **0.673**, NMI **0.709** at the tissue-reference argmax (0.658 / 0.706
+  at the local one). SSAM reaches 0.729 at the best of its 144; none of
+  spSheaf's 216 configurations does.
+- Two layers (Layer 3–4 and Layer 2–3 lateral) are missed at every
+  configuration and initialisation. The diagnostics below were run and are
+  kept here, but since 29 Sep 2026 the paper reports only the miss (the
+  private repository's `docs/notes/osmfish_diagnostics_unreported.md` has the
+  numbers): supervised separability of the two layers (balanced accuracy
+  0.773 ± 0.081 and 0.707 ± 0.071), the resolution test (h 32.5 → 19.5 µm
+  leaves recall at 0, ARI 0.658 → 0.576), the α_s sweep (0.609, 0.619, 0.658,
+  0.593 at the local scales; 0.665, 0.679, 0.620, 0.594 at the tissue ones)
+  and the field at the layer interfaces (0.72× its within-domain mean, 0.82×
+  at the two missed interfaces).
 - Naive k-means (11 groups, 5 seeds): coordinates 0.223 ± 0.006, expression
   0.185 ± 0.027, both 0.222 ± 0.016.
 

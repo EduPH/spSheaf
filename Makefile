@@ -1,7 +1,8 @@
 .PHONY: help install install-pinned install-benchmark install-figures requirements test \
         merfish merfish-seeds merfish-section-all merfish-loo-cv local-all reference-check \
         cache boundary-eval method-validation sheaf-ablation k-sensitivity revision \
-        merfish-reference-field \
+        merfish-reference-field k-selection merfish-k-selection merfish-k-split \
+        figure-kselection spacetx-ablation matched-selection-union \
         osmfish osmfish-seeds osmfish-all osmfish-insample osmfish-insample-tissue \
         osmfish-diagnose osmfish-rule \
         osmfish-cv osmfish-attribute osmfish-resolution osmfish-elongation \
@@ -10,10 +11,17 @@
         segfree segfree-inputs matched-selection benchmark-table benchmark-table-check \
         figures figures-verify figures-test figures-all figures-audit figures-panels \
         panels-osmfish panels-pecab panels-segfree panels-multislice \
-        reported reported-check clean-cache
+        reported reported-check reported-tissue reported-tissue-check clean-cache
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
 	  awk 'BEGIN{FS=":.*?## "}{printf "  %-20s %s\n", $$1, $$2}'
+
+# Every target runs at the package default, the tissue coordinate reference
+# (SPSHEAF_REFERENCE=tissue). The MERFISH benchmark numbers in the paper are at
+# the local reference, which the tuning grid selects on that dataset:
+#     SPSHEAF_REFERENCE=local make merfish merfish-seeds revision
+# The results root is SPSHEAF_DATA; reported/ holds the tables of the local
+# runs, reported/tissue/ those of the tissue runs (see reported/README.md).
 
 install:            ## install spsheaf in editable mode
 	pip install -e .
@@ -37,7 +45,7 @@ test:               ## run the test suite
 merfish:            ## MERFISH benchmark, all five slices (input policy: SPSHEAF_MERFISH_INPUT, default 'section')
 	python -m experiments.merfish.run_all_slices $(MERFISH_CSV) --output-dir $(RESULTS)/merfish/output_merfish
 
-merfish-seeds:      ## 20 k-means seeds x 5 slices: Table 1 means and ED Fig. 2c
+merfish-seeds:      ## 20 k-means seeds x 5 slices: Table 1 means and ED Fig. 1c
 	python -m experiments.benchmark_sdmbench.seed_sensitivity --mol-path $(MERFISH_CSV) \
 	  --output-dir $(RESULTS)/benchmark_sdmbench/output_seed_sensitivity
 
@@ -89,6 +97,7 @@ osmfish:            ## osmFISH cortex
 
 PECAB_RAW := data/raw/pecab/PECAb_dataset/6_Carcinosarcoma_33x220plex/Raw
 RESULTS := $(shell python -c "from spsheaf import paths; print(paths.results())")
+CACHE := $(shell python -c "from spsheaf import paths; print(paths.cache())")
 MERFISH_CSV := $(shell python -c "from spsheaf import paths; print(paths.raw('merfish'))")/moffitt2018_export_full/molecules_full_add.csv.gz
 
 panels-osmfish:     ## re-run osmFISH and dump the data Fig. 3 is drawn from
@@ -97,7 +106,7 @@ panels-osmfish:     ## re-run osmFISH and dump the data Fig. 3 is drawn from
 panels-segfree:     ## dump the per-cell domain maps Fig. 2a is drawn from (needs the MERFISH cache)
 	python -m experiments.merfish.segfree_panels --slice MERFISH_0.19.h5ad
 
-panels-multislice:  ## re-run the five slices + gene-centroid registration and dump ED Fig. 3's data
+panels-multislice:  ## re-run the five slices + gene-centroid registration and dump Supplementary Fig. 2 data
 	python -m experiments.merfish.multislice_panels
 
 panels-pecab:       ## re-run both PECAb replicates and dump their panel data
@@ -113,7 +122,7 @@ segfree-inputs:     ## report which benchmark inputs are available
 
 # --- provenance ---------------------------------------------------------
 # data/ is untracked; reported/ is the small versioned part of it, and is what
-# lets a clone check a number in the manuscript or rebuild ED Fig. 5.
+# lets a clone check a number in the manuscript or rebuild ED Fig. 2.
 
 reported:           ## refresh reported/ from the results root, then its README
 	python tools/collect_reported.py
@@ -121,6 +130,13 @@ reported:           ## refresh reported/ from the results root, then its README
 
 reported-check:     ## fail if reported/ has drifted from the results root
 	python tools/collect_reported.py --check
+
+reported-tissue:    ## the same for the tissue-reference runs: reported/tissue/ from a results root run at the default reference
+	python tools/collect_reported.py --tissue
+	python tools/collect_reported.py --tissue --readme
+
+reported-tissue-check: ## fail if reported/tissue/ has drifted
+	python tools/collect_reported.py --tissue --check
 
 clean-cache:        ## drop derived intermediates (raw data untouched)
 	rm -rf data/cache/*
@@ -134,6 +150,21 @@ cache:              ## build the shared MERFISH cache for SLICE (slow, once)
 
 boundary-eval:      ## memo 3: score the boundary FIELD directly
 	python -m experiments.merfish.boundary_eval --slice $(SLICE)
+
+k-selection:        ## can k be chosen without labels? synthetic tissue, known k (slow)
+	python -m experiments.synthetic.k_selection --design flat   --k-true 6
+	python -m experiments.synthetic.k_selection --design nested --k-true 6
+
+merfish-k-selection: ## the same k procedure on a real annotated section (~45 min, resumable; SLICE=...)
+	python -m experiments.merfish.k_selection --slice $(SLICE) --k 2 16
+
+merfish-k-split:    ## which annotated domain divides at k = 9, 10: runs on the five slices, then the division record
+	for s in 0.04 0.09 0.14 0.19 0.24; do python -m experiments.merfish.k_split --slice MERFISH_$$s.h5ad; done
+	python -m experiments.merfish.k_split_analysis
+	python -m experiments.merfish.k_split_table
+
+figure-kselection:  ## draw the k-selection curves (not one of the paper's 13 figures)
+	cd $(FIGDIR) && python ed_kselection.py
 
 merfish-reference-field: ## what the coordinate reference does to the field (needs the cache)
 	python -m experiments.merfish.reference_field
@@ -194,6 +225,10 @@ figures:            ## build every manuscript figure from data
 	cd $(FIGDIR) && python ed_merfishslices.py
 	cd $(FIGDIR) && python ed_sensitivity.py
 	cd $(FIGDIR) && python ed_composites.py
+	cd $(FIGDIR) && python ed_kselection.py
+	cd $(FIGDIR) && python fig5_ksplit.py
+	cd $(FIGDIR) && python sup_ksplit.py
+	cd $(FIGDIR) && python sup_ablation_spacetx.py
 
 figures-verify:     ## assert the specification on the composed PDFs
 	python $(FIGDIR)/verify_figure.py \
@@ -209,7 +244,11 @@ figures-verify:     ## assert the specification on the composed PDFs
 	  $(FIGDIR)/out/ed_dnaterr.pdf \
 	  $(FIGDIR)/out/ed_ifheat.pdf \
 	  $(FIGDIR)/out/ed_multislice.pdf \
-	  $(FIGDIR)/out/ed_spacetx.pdf --width-mm 180
+	  $(FIGDIR)/out/ed_spacetx.pdf \
+	  $(FIGDIR)/out/ed_kselection.pdf \
+	  $(FIGDIR)/out/fig5.pdf \
+	  $(FIGDIR)/out/sup_ksplit.pdf \
+	  $(FIGDIR)/out/sup_ablation_spacetx.pdf --width-mm 180
 
 figures-audit:      ## resolution of every included image (needs the manuscript)
 	@test -f "$(TEX)" || { echo "set TEX=<path to the .tex>; the manuscript is not part of this repository"; exit 1; }
@@ -249,8 +288,14 @@ spacetx-insample-grid:   ## the 162-configuration in-sample grid, per section (h
 	python -m experiments.spacetx.sweep MERFISH_Allen_Prototype --budget-s 100000
 	python -m experiments.spacetx.sweep BARISTASeq --budget-s 100000
 
-spacetx-insample-panels: ## re-run each section at its grid argmax and dump ED Fig. 6's in-sample maps
+spacetx-insample-panels: ## re-run each section at its grid argmax and dump ED Fig. 3 in-sample maps
 	python -m experiments.spacetx.insample_panels
+
+spacetx-ablation:   ## the ten-arm edge-score ablation on both sections at their selected configurations (Supplementary Fig. 3)
+	python -m experiments.spacetx.ablation_cache MERFISH_Allen_Prototype $(SPACETX_COLS) --grid-spacing 10 --bandwidth 40 --smooth-radius 120 --uniform-dim 6
+	python -m experiments.merfish.sheaf_ablation --cache-path $(CACHE)/spacetx/ablation_MERFISH_Allen_Prototype.npz --k 6 --smooth-radius 120 --spatial-weight 0.25 --out $(RESULTS)/spacetx/sheaf_ablation_MERFISH_Allen_Prototype.csv
+	python -m experiments.spacetx.ablation_cache BARISTASeq $(SPACETX_COLS) --grid-spacing 10 --bandwidth 40 --smooth-radius 180 --uniform-dim 9
+	python -m experiments.merfish.sheaf_ablation --cache-path $(CACHE)/spacetx/ablation_BARISTASeq.npz --k 6 --smooth-radius 180 --spatial-weight 0.5 --out $(RESULTS)/spacetx/sheaf_ablation_BARISTASeq.csv
 
 merfish-loo-cv:     ## leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s); the artifact behind Methods 4.12/4.14
 	python -m experiments.merfish.loo_cv
@@ -264,3 +309,7 @@ benchmark-table-check: ## fail if that table has drifted from the metric files
 matched-selection:  ## memo 5 / Y.I. 2.6: one selection rule for all four methods
 	python -m benchmarks.segfree.matched_selection \
 	  --csv benchmarks/segfree/results/matched_selection_ari.csv
+
+matched-selection-union: ## the same, with spSheaf's grid covering both references (54 configurations): Table 1, Fig. 2b
+	SPSHEAF_LOO_TABLE=reported/merfish/loo_cv_table_union.csv python -m benchmarks.segfree.matched_selection \
+	  --csv benchmarks/segfree/results_union/matched_selection_ari.csv

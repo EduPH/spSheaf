@@ -12,7 +12,7 @@ or pandas DataFrames. Coordinates are in the input's units.
 | 2 graph | `graph.build_spatial_graph(grid, k=6)` → `edges` | symmetric kNN |
 | 3 stalks | `sheaf.compute_stalks(fibers, grid, uniform_dim=6, k_nbrs=50)` | local PCA of the `k_nbrs` nearest fibers (self included), locally centred |
 | 4 restriction maps | `sheaf.compute_restriction_maps(stalks, edges, stalk_dim)` | SVD of `U_uᵀU_v = LΣRᵀ` per edge |
-| 5–6 disagreement, field | `sheaf.compute_boundary_scores(fibers, grid, stalks, edges, rs, smooth_radius, reference=None)` → `raw, smooth` | `D(e) = ‖Lᵀξ_u − Rᵀξ_v‖²`; `reference` = `"local"` (default, `ξ_v = U_vᵀ(f_v − μ_v)`) or `"tissue"` (`f_v − f̄`); env `SPSHEAF_REFERENCE` |
+| 5–6 disagreement, field | `sheaf.compute_boundary_scores(fibers, grid, stalks, edges, rs, smooth_radius, reference=None)` → `raw, smooth` | `D(e) = ‖Lᵀξ_u − Rᵀξ_v‖²`; `reference` = `"tissue"` (default, `ξ_v = U_vᵀ(f_v − f̄)`, `f̄` the section mean) or `"local"` (`f_v − μ_v`, the neighbourhood mean); env `SPSHEAF_REFERENCE` |
 | 7 clustering | `clustering.boundary_aware_clustering(fibers, grid, smooth, edges, n_clusters, spatial_weight=0.5, boundary_alpha=0.5, n_pca=10, n_init=20, random_state=42)` | `w = exp(−α_b B̃/median B̃)` on standardized PCA scores, `[Ẑ_w | α_s S]`, k-means |
 | 8 cleanup | `clustering.spatial_cleanup(labels, edges, grid_coords, min_fragment_frac=0.01)` → `labels, n_reassigned` | fragments < τ of grid points take an adjacent label |
 | all | `pipeline.run_single_slice(mol, slice_name, n_clusters=8, ...)`, `pipeline.run_all_slices(path, ...)` | the steps plus cell-level evaluation |

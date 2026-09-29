@@ -1,0 +1,5 @@
+method,n_configs,per_slice_argmax,one_config,loo_cv,distinct_winners
+Points2Regions,45,0.5100,0.4567,0.3882,3
+FICTURE,18,0.3534,0.3415,0.3415,1
+SSAM (de novo),72,0.4642,0.4010,0.3429,2
+spSheaf,27,0.5638,0.5476,0.5396,2

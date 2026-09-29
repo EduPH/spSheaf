@@ -6,7 +6,7 @@ grid, graph, stalks, restriction maps, disagreement and clustering as
 everywhere else. δ = 0.55 µm, h = 0.8 µm, 5 zones. No `make` targets.
 
 `docs/dev-notes/takei_phase_notes.md` keeps the development history, including a caveat
-about sample size worth reading before quoting anything. k_nbrs = 40 in both runs; the DNA run used the tissue coordinate reference, the IF run (10 Sep 2026) the local one (Table 4).
+about sample size worth reading before quoting anything. k_nbrs = 40 in both runs; the DNA run (ED Fig. 6) used the tissue coordinate reference, the IF run (ED Fig. 7, 10 Sep 2026) the local one (Supplementary Table 3).
 
 ---
 

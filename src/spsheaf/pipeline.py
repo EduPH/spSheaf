@@ -219,7 +219,7 @@ def run_single_slice(mol, slice_name, n_clusters=8,
                      k_graph=6, k_nbrs=50, uniform_dim=6,
                      smooth_radius=60.0, spatial_weight=0.5,
                      boundary_alpha=0.5,
-                     overcluster_factor=1.0,
+                     overcluster_factor=1.0, grid_offset=None,
                      cleanup=True, min_fragment_frac=0.01,
                      eval_at_cell_level=True,
                      pas_k=10, chaos_min_size=3,
@@ -284,7 +284,7 @@ def run_single_slice(mol, slice_name, n_clusters=8,
     # 2. Build fibers
     grid_coords, raw_fibers, gene_names = fibers.build_kernel_fibers(
         mol_single, grid_spacing=grid_spacing, bandwidth=bandwidth,
-        verbose=verbose,
+        grid_offset=grid_offset, verbose=verbose,
     )
     fibers_norm = fibers.normalize_fibers(raw_fibers)
 

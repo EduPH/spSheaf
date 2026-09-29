@@ -154,16 +154,21 @@ def compute_restriction_maps(stalks, edges, stalk_dim, verbose=True):
 
 #: Reference point of the local coordinates xi_v = U_v^T (f_v - c_v).
 #:
+#: ``tissue``  c_v = fbar, the mean fiber of the section. The disagreement
+#:             then also carries the term (L^T U_u^T - R^T U_v^T)(mu_u - mu_v)
+#:             at aligned stalks, i.e. the offset of the two neighbourhood
+#:             means seen through the alignment. The default since 28 Sep
+#:             2026: better on osmFISH and both SpaceTx sections.
 #: ``local``   c_v = mu_v, the mean fiber of v's k_nbrs grid neighbours -- the
 #:             neighbourhood the stalk is fitted on. xi_v is then v's own
-#:             local-PCA score, a local section. The default.
-#: ``tissue``  c_v = fbar, the mean fiber of the section: the optional term,
-#:             which adds (L^T U_u^T - R^T U_v^T)(mu - fbar) to every edge
-#:             (the construction reported up to 9 Sep 2026).
-#: Set with SPSHEAF_REFERENCE=local|tissue.
+#:             local-PCA score, a local section. Selected by the tuning grid
+#:             on the MERFISH benchmark (0.571 against 0.548), and the
+#:             construction the MERFISH ablation is reported at.
+#: Set with SPSHEAF_REFERENCE=local|tissue; the tuning grids of
+#: experiments/ include both values.
 def _default_reference():
     r = os.environ.get("SPSHEAF_REFERENCE") or {"local": "local", "global": "tissue"}.get(
-        os.environ.get("SPSHEAF_CENTERING", ""), "local")
+        os.environ.get("SPSHEAF_CENTERING", ""), "tissue")
     if r not in ("local", "tissue"):
         raise ValueError(f"SPSHEAF_REFERENCE must be 'local' or 'tissue', got {r!r}")
     return r

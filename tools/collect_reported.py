@@ -4,7 +4,7 @@
 per-cell dumps that are far too large for git, and it lives outside the
 repository on most machines. That left an asymmetry -- every competitor's
 numbers were versioned under ``benchmarks/segfree/results/``, while spSheaf's
-own were not -- so a clone could rebuild the competitor columns of Table 2 but
+own were not -- so a clone could rebuild the competitor columns of the comparison table but
 not ours, and the figures that read the sweeps could not be drawn at all.
 
 ``reported/`` closes that gap. It holds only small summary tables: one row per
@@ -31,13 +31,18 @@ from spsheaf import paths
 
 HERE = Path(__file__).resolve().parent.parent
 DEST = HERE / "reported"
+#: --tissue: the same manifest collected from a results root whose runs were
+#: made at the tissue reference (the package default since 28 Sep 2026), into
+#: reported/tissue/. reported/ itself holds the local-reference runs, which
+#: the MERFISH benchmark numbers in the paper are drawn from.
+TISSUE = False
 
 #: (destination subpath, source glob under the results root, what it supports)
 MANIFEST: list[tuple[str, str, str]] = [
     # ---- Table 1: MERFISH, five slices, 20 k-means seeds -------------
     ("merfish/seed_sensitivity_per_slice.csv",
      "benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_per_slice.csv",
-     "Table 1 and ED Fig. 1: per-slice ARI, mean over 20 seeds"),
+     "Table 1 and ED Fig. 1c: per-slice ARI, mean over 20 seeds"),
     ("merfish/seed_sensitivity_summary.csv",
      "benchmark_sdmbench/output_seed_sensitivity/seed_sensitivity_summary.csv",
      "Table 1: the seed spread quoted in the caption"),
@@ -46,55 +51,75 @@ MANIFEST: list[tuple[str, str, str]] = [
      "Table 1: every (slice, seed) run behind the means"),
     ("merfish/all_slices_results.csv",
      "merfish/output_merfish/all_slices_results.csv",
-     "Sec 2.2: the headline five-slice run at the transferred configuration"),
+     "Results 2.2: the five-slice run at the MERFISH configuration"),
     ("merfish/loo_cv_table.csv", "merfish/loo_cv_table.csv",
-     "Methods 4.12/4.14: leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s)"),
+     "Methods (selection rules): leave-one-slice-out selection of (sigma_s, alpha_b, alpha_s)"),
     ("merfish/multislice.json", "merfish/panels/multislice.json",
-     "Sec 2.6 and ED Fig. 3: cross-slice label agreement (69.8 %, 63.1-78.5 %) "
+     "Supplementary Fig. 2: cross-slice label agreement (69.8 %, 63.1-78.5 %) "
      "and the self-alignment bound (91.5 %); `make panels-multislice`"),
     ("osmfish/tune_cv.json", "osmfish/tune_cv.json",
      "osmFISH leave-one-spatial-block-out (not in the manuscript since 12 Sep 2026; "
      "kept as the record of the check)"),
+    ("merfish/loo_cv_table_union.csv", "merfish/loo_cv_table_union.csv",
+     "Table 1 and Fig. 2b: the 27-configuration grid at both coordinate "
+     "references (54 rows per slice), the table the three selection rules are "
+     "applied to (`make matched-selection-union`)"),
+    ("merfish/k_selection_*.csv", "merfish/k_selection_MERFISH_*.csv",
+     "Choosing k (Results, ED k-selection figure): silhouette, grid-phase "
+     "stability, the seed control and ARI against the annotation for k = 2-16 "
+     "on each of the five slices, at the MERFISH defaults"),
+    ("merfish/k_split_events.csv", "merfish/k_split_events.csv",
+     "Structure below the annotation, Supplementary Table 4: every division of "
+     "an annotated domain at k = 8, 9, 10 on the five slices (`make merfish-k-split`)"),
+    ("merfish/k_split_pairs.csv", "merfish/k_split_pairs.csv",
+     "Fig. 4 (ksplit): correlation of the per-gene difference vectors between "
+     "divisions of the same domain on different slices"),
+    ("merfish/k_split_across_k.csv", "merfish/k_split_across_k.csv",
+     "Whether a division at k = 9 is inherited from k = 8 or persists to k = 10"),
     ("merfish/reference_field.csv", "merfish/reference_field.csv",
-     "Sec 2.9: what the coordinate reference does to the boundary field -- the "
+     "Results 2.3 and Methods: what the coordinate reference does to the boundary field -- the "
      "localization/partition dissociation, and the field's width after the "
      "median normalization the weighting applies"),
 
-    # ---- Table 2, spSheaf columns ------------------------------------
+    # ---- Table 1, spSheaf columns ------------------------------------
     ("osmfish/osmfish_metrics.csv",
      "osmfish/output_osmFISH_boundary/osmfish_metrics.csv",
-     "Table 2, osmFISH transferred row"),
+     "ED Table 1, osmFISH transferred row"),
     ("osmfish/osmfish_sweep.csv",
      "osmfish/output_osmFISH_boundary/osmfish_sweep.csv",
-     "Table 2, osmFISH in-sample row, and ED Fig. 5 row 1 (the 108+24 grid)"),
+     "Table 1, osmFISH row, and ED Fig. 2 row 1 (the 108+24 grid)"),
     ("osmfish/osmfish_metrics_tissue_reference.csv",
      "osmfish/tissue_reference/osmfish_metrics.csv",
-     "osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 2 tissue row is the argmax in osmfish_sweep.csv)"),
+     "osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 1's osmFISH value is the tissue-reference argmax in osmfish_sweep.csv)"),
     ("spacetx/MERFISH_Allen_Prototype_metrics.csv",
      "spacetx/MERFISH_Allen_Prototype/metrics.csv",
-     "Table 2, Allen transferred row (one row per k-means seed)"),
+     "ED Table 1, Allen transferred row (one row per k-means seed)"),
     ("spacetx/MERFISH_Allen_Prototype_sweep.csv",
      "spacetx/MERFISH_Allen_Prototype/sweep.csv",
-     "Table 2, Allen in-sample row, and ED Fig. 5 row 2 (the 162 grid)"),
+     "Table 1, Allen row, and ED Fig. 2 row 2 (the 162 grid)"),
     ("spacetx/BARISTASeq_metrics.csv", "spacetx/BARISTASeq/metrics.csv",
-     "Table 2, BaristaSeq transferred row"),
+     "ED Table 1, BaristaSeq transferred row"),
     ("spacetx/BARISTASeq_sweep.csv", "spacetx/BARISTASeq/sweep.csv",
-     "Table 2, BaristaSeq in-sample row, and ED Fig. 5 row 3 (the 162 grid)"),
+     "Table 1, BaristaSeq row, and ED Fig. 2 row 3 (the 162 grid)"),
+    ("spacetx/sheaf_ablation_*.csv", "spacetx/sheaf_ablation_*.csv",
+     "Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx "
+     "section at its selected configuration (`make spacetx-ablation`; tissue "
+     "reference, so present under reported/tissue/)"),
 
     # ---- why osmFISH is the one dataset we do not lead ---------------
     ("osmfish/resolution.csv", "osmfish/resolution.csv",
-     "Sec 2.9 and Methods: does domain WIDTH predict which domains are lost"),
+     "Not in the submitted version (docs/notes/osmfish_diagnostics_unreported.md, private repo): does domain WIDTH predict which domains are lost"),
     ("osmfish/elongation.csv", "osmfish/elongation.csv",
-     "Sec 2.9: are ELONGATED domains lost, and is alpha_s the cause"),
+     "Not in the submitted version: are ELONGATED domains lost, and is alpha_s the cause"),
     ("osmfish/alpha_sweep.csv", "osmfish/alpha_sweep.csv",
-     "Methods (osmFISH spatial weight): ARI and NMI at alpha_s in {0, 0.25, 0.5, 0.75}. "
+     "Not in the submitted version: ARI and NMI at alpha_s in {0, 0.25, 0.5, 0.75}. "
      "Written by elongation.py only since 11 Sep 2026 -- it used to print these four "
      "numbers and save nothing, so re-run `make osmfish-elongation` if the copy here "
      "predates that"),
     ("osmfish/tune_attribute.csv", "osmfish/tune_attribute.csv",
-     "Methods: which transferred change costs the accuracy (8 runs)"),
+     "Not in the submitted version: which transferred change costs the accuracy (8 runs)"),
     ("osmfish/seed_sensitivity.csv", "osmfish/seed_sensitivity.csv",
-     "Table 2 caption: the osmFISH seed spread"),
+     "Table 1 caption: the osmFISH seed spread"),
 
     # ---- reviewer-memo experiments (MERFISH, all five slices) --------
     ("merfish/boundary_eval_*.csv", "merfish/boundary_eval_MERFISH_*.csv",
@@ -106,10 +131,10 @@ MANIFEST: list[tuple[str, str, str]] = [
 
     # ---- the non-cortex applications --------------------------------
     ("brain_receptor/metrics.csv", "brain_receptor/output_brain_receptor/metrics.csv",
-     "ED Fig. 7 (scale): the receptor-panel section"),
+     "ED Fig. 5 (scale): the receptor-panel section"),
     ("brain_receptor/metrics_vs_allen.csv",
      "brain_receptor/output_brain_receptor/metrics_vs_allen.csv",
-     "ED Fig. 7: agreement with the Allen reference annotation"),
+     "ED Fig. 5: agreement with the Allen reference annotation"),
     ("atera/breast_metrics.csv", "atera/output_atera_breast/metrics.csv",
      "ATERA breast section (not in the manuscript)"),
     ("atera/breast_signature_metrics.csv",
@@ -121,42 +146,47 @@ MANIFEST: list[tuple[str, str, str]] = [
      "atera/output_atera_cervical/signature_metrics.csv",
      "ATERA cervical, signature scores per domain (not in the manuscript)"),
     ("pecab/Rep1_summary.csv", "pecab/output_pecab_signaling_Rep1/summary.csv",
-     "ED Fig. 10 (PECAb): replicate 1"),
+     "ED Fig. 8 (PECAb): replicate 1"),
     ("pecab/Rep1_marker_corr.csv", "pecab/output_pecab_signaling_Rep1/marker_corr.csv",
-     "ED Fig. 10: marker correlations, replicate 1"),
+     "ED Fig. 8: marker correlations, replicate 1"),
     ("pecab/Rep1_emt_concordance.csv",
      "pecab/output_pecab_signaling_Rep1/emt_concordance.csv",
-     "ED Fig. 10: EMT concordance"),
+     "ED Fig. 8: EMT concordance"),
     ("pecab/Rep2_summary.csv", "pecab/output_pecab_signaling_Rep2/summary.csv",
-     "ED Fig. 10: replicate 2"),
+     "ED Fig. 8: replicate 2"),
     ("pecab/Rep2_marker_corr.csv", "pecab/output_pecab_signaling_Rep2/marker_corr.csv",
-     "ED Fig. 10: the r = 0.94 cross-replicate agreement"),
+     "ED Fig. 8: the r = 0.94 cross-replicate agreement"),
 
-    # ---- nuclear architecture (ED Figs 8 and 9) ---------------------
+    # ---- can k be chosen without an annotation? ---------------------
+    ("synthetic/k_selection_*.csv", "synthetic/k_selection_*.csv",
+     "Choosing k: the annotation-free criteria against k on synthetic tissue "
+     "of known K, two designs x two data seeds (figures/ed_kselection.py)"),
+
+    # ---- nuclear architecture (ED Figs 6 and 7) ---------------------
     ("takei/zone_mark_heatmap.csv", "takei/output_takei_if/zone_mark_heatmap.csv",
-     "ED Fig. 9b: zone-by-mark composition, row-centred"),
+     "ED Fig. 7b: zone-by-mark composition, row-centred"),
     ("takei/zone_archetype_sizes.csv", "takei/output_takei_if/zone_archetype_sizes.csv",
-     "ED Fig. 9b: how many zones fall in each archetype"),
+     "ED Fig. 7b: how many zones fall in each archetype"),
     ("takei/zone_archetype_assignment.csv",
      "takei/output_takei_if/zone_archetype_assignment.csv",
-     "ED Fig. 9b: (nucleus, zone) -> archetype, the assignment behind the panel"),
+     "ED Fig. 7b: (nucleus, zone) -> archetype, the assignment behind the panel"),
     ("takei/if_certification_summary.csv",
      "takei/output_takei_if/certification_summary.csv",
-     "ED Fig. 9: the IF certification summary"),
+     "ED Fig. 7: the IF certification summary"),
     ("takei/if_certification_zone_table.csv",
      "takei/output_takei_if/certification_zone_table.csv",
-     "ED Fig. 9: per-zone certification"),
+     "ED Fig. 7: per-zone certification"),
     ("takei/dna_certification_per_nucleus.csv",
      "takei/output_takei_feat_full1/certification_per_nucleus.csv",
-     "ED Fig. 8 (DNA territories): per-nucleus certification"),
+     "ED Fig. 6 (DNA territories): per-nucleus certification"),
     ("takei/dna_certification_radial.csv",
      "takei/output_takei_feat_full1/certification_radial.csv",
-     "ED Fig. 8: the radial profile"),
+     "ED Fig. 6: the radial profile"),
     ("takei/dna_radial_vs_genedensity.csv",
      "takei/output_takei_feat_full1/radial_vs_genedensity.csv",
-     "ED Fig. 8: radial position against gene density"),
+     "ED Fig. 6: radial position against gene density"),
     ("takei/dna_summary.csv", "takei/output_takei_feat_full1/summary.csv",
-     "ED Fig. 8: the run summary"),
+     "ED Fig. 6: the run summary"),
 ]
 
 CAP_BYTES = 4 * 1024 * 1024          # a summary table, not a per-cell dump
@@ -170,7 +200,26 @@ PRODUCED_BY = {
     "atera": "python -m experiments.atera.run_atera",
     "pecab": "make panels-pecab",
     "takei": "python -m experiments.takei.make_zone_heatmaps (and takei.run_takei)",
+    "synthetic": "make k-selection",
 }
+
+README_HEAD_TISSUE = """<!-- generated by tools/collect_reported.py --tissue --readme; do not edit by hand -->
+# reported/tissue/ -- the same tables, from the runs at the tissue reference
+
+The coordinate reference of the stalk sections is a tuned parameter with two
+values. `reported/` holds the runs at the local reference, which the tuning
+grid selects on the MERFISH benchmark and which the MERFISH numbers of the
+paper are drawn from. This directory holds the runs at the tissue reference,
+the package default, made with `SPSHEAF_REFERENCE=tissue` and a separate
+results root: Table 1's tissue row, the osmFISH and SpaceTx argmaxes, the
+ablation at the default (Discussion; Supplementary Fig. 3) and the k sweeps
+repeated at the default. Only the experiments that were repeated are here.
+
+Refresh or check with
+
+    SPSHEAF_DATA=<tissue results root> python tools/collect_reported.py --tissue
+    SPSHEAF_DATA=<tissue results root> python tools/collect_reported.py --tissue --check
+"""
 
 README_HEAD = """<!-- generated by tools/collect_reported.py --readme; do not edit by hand -->
 # reported/ -- the tables behind every number in the manuscript
@@ -184,7 +233,7 @@ sweeps without first re-running days of compute.
 
 The competitors' tables are NOT here; they live where they always did, under
 `benchmarks/segfree/results/`, alongside the per-cell label CSVs that the
-figures Hungarian-match. The two places together are the provenance of Table 2.
+figures Hungarian-match. The two places together are the provenance of Table 1.
 
 Refresh after a run, or check for drift, with
 
@@ -200,8 +249,10 @@ def write_readme():
     """reported/README.md, from the manifest itself, so it cannot drift."""
     groups = {}
     for dst, src, why in MANIFEST:
+        if TISSUE and not list(DEST.glob(dst)):
+            continue                      # only what was repeated at the default
         groups.setdefault(Path(dst).parts[0], []).append((dst, src, why))
-    lines = [README_HEAD]
+    lines = [README_HEAD_TISSUE if TISSUE else README_HEAD]
     for g in sorted(groups):
         lines.append(f"\n## {g}/\n")
         if g in PRODUCED_BY:
@@ -237,7 +288,12 @@ def main():
                    help="report what differs and exit non-zero; write nothing")
     a.add_argument("--readme", action="store_true",
                    help="regenerate reported/README.md from the manifest and stop")
+    a.add_argument("--tissue", action="store_true",
+                   help="collect into reported/tissue/ from a results root run at the tissue reference")
     a = a.parse_args()
+    global DEST, TISSUE
+    if a.tissue:
+        DEST, TISSUE = DEST / "tissue", True
     if a.readme:
         write_readme()
         return
@@ -258,6 +314,14 @@ def main():
             if src.stat().st_size > CAP_BYTES:
                 oversize.append((src, src.stat().st_size))
                 continue
+            if TISSUE:
+                # arms-style tables (the ablation, the boundary evaluation)
+                # carry both references in one file, so the tissue root holds
+                # a copy of the local one: not a second result, not tracked twice
+                local = HERE / "reported" / dst.relative_to(DEST)
+                if local.exists() and filecmp.cmp(src, local, shallow=False):
+                    same += 1
+                    continue
             fresh = dst.exists() and filecmp.cmp(src, dst, shallow=False)
             if fresh:
                 same += 1
