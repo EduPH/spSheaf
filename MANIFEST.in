@@ -1,0 +1,14 @@
+include LICENSE README.md pyproject.toml
+recursive-include src/spsheaf *.py
+recursive-include examples quickstart.py tutorial.ipynb
+prune experiments
+prune benchmarks
+prune figures
+prune reported
+prune tests
+prune tools
+prune docs
+prune data
+prune _staging
+prune _to_delete
+global-exclude __pycache__ *.py[cod] .DS_Store

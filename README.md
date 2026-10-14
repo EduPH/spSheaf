@@ -5,46 +5,68 @@ segmentation. spSheaf places kernel-smoothed expression fibers on a grid,
 gives each vertex a local principal-subspace stalk, scores every edge by its
 *sheaf disagreement* — the residual mismatch of neighbouring local coordinates
 after the stalks are aligned — and attenuates those transitions during
-clustering. Paluzo-Hidalgo & Imoto, Nature Methods (submitted).
+clustering. Paluzo-Hidalgo, Maehara & Imoto, Nature Methods (submitted).
 
 ## Install
 
 ```bash
-pip install -e .                     # Python >= 3.9; numpy, scipy, scikit-learn, pandas
+pip install spsheaf                  # Python >= 3.9; numpy, scipy, scikit-learn, pandas
+pip install -e .                     # from a clone, for the experiments and figures
 pip install -r requirements-lock.txt # exact versions the results were produced on
-pip install -e ".[benchmark]"        # optional: ssam, points2regions
-make test
 ```
 
-## Use
+## Quickstart
+
+`examples/quickstart.py` downloads one public section — the SpaceTx BaristaSeq mouse visual cortex,
+0.32 million molecules, 81 genes — runs the eight steps at the paper's
+settings for it, and draws the domains next to the authors' layer
+annotation. One minute on a laptop, no other data needed:
+
+```bash
+pip install spsheaf matplotlib
+python examples/quickstart.py        # writes examples/quickstart_domains.png; ARI 0.77 against the six layers
+```
+
+![quickstart](https://raw.githubusercontent.com/EduPH/spSheaf/main/examples/quickstart_domains.png)
+
+`examples/tutorial.ipynb` is the same section step by step, with every
+intermediate drawn (fibers, stalks, the disagreement field), what each
+parameter does, the comparison with the annotation per layer, and how to
+choose the number of domains with the silhouette when there is no
+annotation. It runs in under a minute; the executed outputs are kept in the
+notebook.
+
+The whole method is eight function calls on a molecule table with columns
+`x`, `y`, `gene` (any units; the parameters are in those units):
 
 ```python
-from spsheaf import io, fibers, graph, sheaf, clustering
+from spsheaf import fibers, graph, sheaf, clustering
 
-grid, raw, _ = fibers.build_kernel_fibers(mol, grid_spacing=15, bandwidth=25,
-                                        x_col="x", y_col="y")     # mol: DataFrame with x, y, gene
-fib    = fibers.normalize_fibers(raw)
-edges  = graph.build_spatial_graph(grid, k=6)
-stalks = sheaf.compute_stalks(fib, grid, uniform_dim=6, k_nbrs=50)
-rs     = sheaf.compute_restriction_maps(stalks, edges, 6)
-b_raw, b_smooth = sheaf.compute_boundary_scores(fib, grid, stalks, edges, rs, smooth_radius=60)
-labels = clustering.boundary_aware_clustering(fib, grid, b_smooth, edges, n_clusters=8)
-labels, _ = clustering.spatial_cleanup(labels, edges, grid_coords=grid)
+grid, raw, genes = fibers.build_kernel_fibers(mol, grid_spacing=15, bandwidth=25, x_col="x", y_col="y")
+fib    = fibers.normalize_fibers(raw)                               # 1  fibers on a grid
+edges  = graph.build_spatial_graph(grid, k=6)                       # 2  spatial graph
+stalks = sheaf.compute_stalks(fib, grid, uniform_dim=6, k_nbrs=50)  # 3  stalks: local principal subspaces
+rs     = sheaf.compute_restriction_maps(stalks, edges, 6)           # 4  restriction maps by SVD alignment
+b_raw, b_smooth = sheaf.compute_boundary_scores(fib, grid, stalks, edges, rs, smooth_radius=60)  # 5-6
+labels = clustering.boundary_aware_clustering(fib, grid, b_smooth, edges, n_clusters=8)          # 7
+labels, _ = clustering.spatial_cleanup(labels, edges, grid_coords=grid)                          # 8
 ```
 
-`spsheaf.pipeline.run_single_slice` wraps the eight steps and the evaluation.
-Units are those of the input coordinates. Parameters: grid spacing `δ`,
-kernel bandwidth `h`, stalk dimension `d`, smoothing radius `σ_s`, boundary
-weight `α_b`, spatial weight `α_s`, and the coordinate reference of the stalk
-sections (`SPSHEAF_REFERENCE=tissue|local`, default `tissue`: coordinates
-referenced to the section mean; `local` references them to the neighbourhood
-mean, and is what the tuning grid selects on the MERFISH benchmark). The
-number of domains `k` is an input; `experiments/merfish/k_selection.py`
-computes the silhouette over a range of `k`, and the paper recommends
-selecting within the range where it lies within 0.002 of its maximum.
-`docs/package_api.md` lists the modules.
+`spsheaf.pipeline.run_single_slice` wraps the eight steps and the evaluation
+against an annotation. Parameters: grid spacing `δ`, kernel bandwidth `h`,
+stalk dimension `d`, smoothing radius `σ_s`, boundary weight `α_b`, spatial
+weight `α_s`, and the coordinate reference of the stalk sections
+(`SPSHEAF_REFERENCE=tissue|local`, default `tissue`: coordinates referenced
+to the section mean; `local` references them to the neighbourhood mean, and
+is what the tuning grid selects on the MERFISH benchmark). The number of
+domains `k` is an input; `experiments/merfish/k_selection.py` computes the
+silhouette over a range of `k`, and the paper recommends selecting within the
+range where it lies within 0.002 of its maximum. `docs/package_api.md` lists
+the modules.
 
-## Reproduce
+## Reproduce the paper
+
+Everything below this line is the paper's reproduction material; `pip install spsheaf` ships only `src/spsheaf/`.
 
 Point the code at the data (`data/README.md` lists every input and where it
 comes from):
@@ -114,7 +136,8 @@ SpaceTx sections no edge score separates from it (`reported/tissue/`).
 ## Layout
 
 ```
-src/spsheaf/         the method (fibers, graph, sheaf, clustering, evaluation, pipeline)
+src/spsheaf/         the method (fibers, graph, sheaf, clustering, evaluation, pipeline); what `pip install spsheaf` ships
+examples/            quickstart.py and tutorial.ipynb: one public section from molecules to domains
 experiments/         one folder per dataset (synthetic/ for the k calibration); each README gives commands, inputs and outputs
 benchmarks/segfree/  SSAM, Points2Regions and FICTURE under a matched protocol; results/, results_union/, results_tissue/ tracked
 figures/             figure pipeline; out/ is generated, assets/ holds the few placed rasters

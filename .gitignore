@@ -49,3 +49,6 @@ benchmarks/segfree/results/_to_delete/
 
 # --- figure snapshots kept per coordinate reference (local working copies)
 figures/out_*/
+
+# --- quickstart downloads
+examples/data_quickstart/
