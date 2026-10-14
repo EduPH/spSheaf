@@ -27,7 +27,7 @@ pip install spsheaf matplotlib
 python examples/quickstart.py        # writes examples/quickstart_domains.png; ARI 0.77 against the six layers
 ```
 
-![quickstart](https://raw.githubusercontent.com/EduPH/spSheaf/main/examples/quickstart_domains.png)
+![quickstart](examples/quickstart_domains.png)
 
 `examples/tutorial.ipynb` is the same section step by step, with every
 intermediate drawn (fibers, stalks, the disagreement field), what each
