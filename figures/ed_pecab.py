@@ -273,6 +273,56 @@ def arrsub(C, idx):
     return C[np.ix_(idx, idx)]
 
 
+def _profiles():
+    """edge_profiles.csv / edge_summary.csv: the tracked copy first, else the
+    results tree (experiments/pecab/edge_profiles.py)."""
+    import pandas as pd
+    for root in (REPO / "reported" / "pecab", None):
+        if root is None:
+            from spsheaf import paths
+            root = paths.results("pecab")
+        if (root / "edge_profiles.csv").exists():
+            return (pd.read_csv(root / "edge_profiles.csv"),
+                    pd.read_csv(root / "edge_summary.csv"))
+    raise SystemExit("run  python -m experiments.pecab.edge_profiles")
+
+
+REP_STYLE = {"Rep1": dict(color=ss.METHOD_COLORS["spSheaf"], label="replicate 1"),
+             "Rep2": dict(color="#D55E00", label="replicate 2")}
+
+
+def _edge_panel(path, key, ylabel, title, hline=None):
+    """One quantity against the signed distance to the mesenchymal
+    compartment's edge, both replicates: median line, interquartile band."""
+    prof, summ = _profiles()
+    fig, ax = ss.panel(84, 44)
+    fig.subplots_adjust(left=0.15, right=0.97, top=0.88, bottom=0.22)
+    ax.axvline(0, color="#9AA4AE", lw=0.6, ls=(0, (3, 2)), zorder=1)
+    if hline is not None:
+        ax.axhline(hline, color="#CCCCCC", lw=0.5, zorder=1)
+    for rep, st in REP_STYLE.items():
+        d = prof[prof.rep == rep]
+        x = (d.bin_lo + d.bin_hi) / 2
+        ax.fill_between(x, d[f"{key}_q25"], d[f"{key}_q75"], color=st["color"], alpha=0.18, lw=0, zorder=2)
+        ax.plot(x, d[f"{key}_med"], color=st["color"], lw=1.0, label=st["label"], zorder=3)
+    ax.set_xlabel("distance to the compartment edge (spacings; inside $<$ 0)")
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=TICK, pad=3)
+    ax.legend(frameon=False, fontsize=TICK, loc="upper right", handlelength=1.6)
+    ss.save_panel(fig, path)
+    return summ
+
+
+def panel_g(path):
+    return _edge_panel(path, "emt", "EMT score (median, IQR)",
+                       "EMT score across the mesenchymal compartment's edge", hline=0)
+
+
+def panel_h(path):
+    return _edge_panel(path, "field", "boundary score (median, IQR)",
+                       "the field across the same edge")
+
+
 def main():
     ss.apply()
     a1, m1 = load("Rep1")
@@ -284,10 +334,19 @@ def main():
     panel_d(PANELS / "pec_d.pdf", a1, m1)
     panel_e(PANELS / "pec_e.pdf", a2, m2)
     r, npairs = panel_f(PANELS / "pec_f.pdf", a1, m1, a2, m2)
+    summ = panel_g(PANELS / "pec_g.pdf")
+    panel_h(PANELS / "pec_h.pdf")
+    for _, row in summ.iterrows():
+        print(f"  {row.rep}: EMT inside {row.emt_inside:+.2f} outside {row.emt_outside:+.2f}; "
+              f"far-in {row.emt_far_in:+.2f} -> far-out {row.emt_far_out:+.2f}; logistic width "
+              f"{row.logistic_width_steps:.2f} spacings at {row.logistic_centre_steps:+.1f}; "
+              f"field at edge / interior {row.field_edge_over_interior:.2f}")
 
     lay = Layout(
-        name="ed_pecab", width_mm=180.0, height_mm=110.0,
+        name="ed_pecab", width_mm=180.0, height_mm=162.0,
         panels=[
+            Panel("g", PANELS / "pec_g.pdf", x=5,   y=114, label_dx=-4, label_dy=-4),
+            Panel("h", PANELS / "pec_h.pdf", x=93,  y=114, label_dx=-4, label_dy=-4),
             Panel("a", PANELS / "pec_a.pdf", x=5,   y=6,  label_dx=-4, label_dy=-5),
             Panel("b", PANELS / "pec_b.pdf", x=63,  y=6,  label_dx=-4, label_dy=-5),
             Panel("c", PANELS / "pec_c.pdf", x=121, y=6,  label_dx=-4, label_dy=-5),

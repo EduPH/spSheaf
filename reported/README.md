@@ -60,6 +60,11 @@ Produced by `make merfish merfish-seeds merfish-loo-cv revision`.
 | `k_split_events.csv` | Structure below the annotation, Supplementary Table 4: every division of an annotated domain at k = 8, 9, 10 on the five slices (`make merfish-k-split`) | `merfish/k_split_events.csv` |
 | `k_split_pairs.csv` | Fig. 4 (ksplit): correlation of the per-gene difference vectors between divisions of the same domain on different slices | `merfish/k_split_pairs.csv` |
 | `k_split_across_k.csv` | Whether a division at k = 9 is inherited from k = 8 or persists to k = 10 | `merfish/k_split_across_k.csv` |
+| `graph_k.csv` | Not in the paper (private notes, experiments_not_in_paper.md): k_graph = 4, 6, 8 on the five slices over three seeds; the square lattice's tie-break does not matter (`make merfish-graph-k`) | `merfish/graph_k.csv` |
+| `k_split_celltypes.csv` | Fig. 4e: the Moffitt neuronal clusters in the two BST halves at k = 9, per slice and cluster (counts, odds ratio, Fisher q); `make merfish-k-split` | `merfish/k_split_celltypes.csv` |
+| `k_split_celltypes_pairs.csv` | Results 2.7: cross-slice correlation of the per-cluster log odds (0.94 for 0.19 vs 0.24) | `merfish/k_split_celltypes_pairs.csv` |
+| `k_split_celltypes_summary.csv` | Methods: cells per half and cells dropped, per slice | `merfish/k_split_celltypes_summary.csv` |
+| `k_split_celltypes_markers.csv` | Results 2.7: cell-level marker genes of the enriched clusters and of the halves | `merfish/k_split_celltypes_markers.csv` |
 | `reference_field.csv` | Results 2.3 and Methods: what the coordinate reference does to the boundary field -- the localization/partition dissociation, and the field's width after the median normalization the weighting applies | `merfish/reference_field.csv` |
 | `boundary_eval_*.csv` | memo 3: the boundary field scored directly, without clustering | `merfish/boundary_eval_MERFISH_*.csv` |
 | `sheaf_ablation_*.csv` | memo 2: sheaf against the simpler local-subspace controls | `merfish/sheaf_ablation_MERFISH_*.csv` |
@@ -94,6 +99,8 @@ Produced by `make panels-pecab`.
 | `Rep1_emt_concordance.csv` | ED Fig. 8: EMT concordance | `pecab/output_pecab_signaling_Rep1/emt_concordance.csv` |
 | `Rep2_summary.csv` | ED Fig. 8: replicate 2 | `pecab/output_pecab_signaling_Rep2/summary.csv` |
 | `Rep2_marker_corr.csv` | ED Fig. 8: the r = 0.94 cross-replicate agreement | `pecab/output_pecab_signaling_Rep2/marker_corr.csv` |
+| `edge_profiles.csv` | ED Fig. 8g,h: EMT score and field against the signed distance to the mesenchymal compartment's edge, both replicates (`make pecab-edge`) | `pecab/edge_profiles.csv` |
+| `edge_summary.csv` | ED Fig. 8 caption: the EMT change across the edge, its logistic width, the field at the edge | `pecab/edge_summary.csv` |
 
 
 ## spacetx/
@@ -106,7 +113,7 @@ Produced by `make spacetx-all`.
 | `MERFISH_Allen_Prototype_sweep.csv` | Table 1, Allen row, and ED Fig. 2 row 2 (the 162 grid) | `spacetx/MERFISH_Allen_Prototype/sweep.csv` |
 | `BARISTASeq_metrics.csv` | ED Table 1, BaristaSeq transferred row | `spacetx/BARISTASeq/metrics.csv` |
 | `BARISTASeq_sweep.csv` | Table 1, BaristaSeq row, and ED Fig. 2 row 3 (the 162 grid) | `spacetx/BARISTASeq/sweep.csv` |
-| `sheaf_ablation_*.csv` | Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx section at its selected configuration (`make spacetx-ablation`; tissue reference, so present under reported/tissue/) | `spacetx/sheaf_ablation_*.csv` |
+| `sheaf_ablation_*.csv` | Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx section at its selected configuration (`make spacetx-ablation`; tissue reference; the `_merfishscales` files are the same arms at h 25, sigma_s 60, not in the paper, see the private notes) (tissue reference, so present under reported/tissue/) | `spacetx/sheaf_ablation_*.csv` |
 
 
 ## synthetic/

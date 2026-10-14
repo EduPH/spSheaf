@@ -160,12 +160,15 @@ def ed_ifheat() -> Layout:
     name = "ed_ifheat"
     ifdir = paths.results("takei") / "output_takei_if"
     pa = PANELS / "ed_ifheat_radial.pdf"
+    # all three panels share the left margin (x = 6 mm) and the width, so
+    # the letters line up and no panel floats in the middle of the canvas
+    PW = W - 12.0
     ha = radial_certification(ifdir / "certification_zone_table.csv",
                               ifdir / "certification_summary.csv",
-                              pa, width_mm=120.0)
+                              pa, width_mm=PW)
     pb = PANELS / "ed_ifheat_archetypes.pdf"
     hb = zone_mark_heatmap(ifdir / "zone_mark_heatmap.csv",
-                           ifdir / "zone_archetype_sizes.csv", pb, width_mm=150.0)
+                           ifdir / "zone_archetype_sizes.csv", pb, width_mm=PW)
     # c keeps this nucleus's own zones -- three of its five fall in one pooled
     # archetype, so recolouring by archetype would merge them -- and names each
     # zone's archetype in the legend, which is what links c to b
@@ -178,9 +181,9 @@ def ed_ifheat() -> Layout:
     zone_labels = {int(r.zone): f"zone {int(r.zone)} \u00b7 {SHORT.get(r.archetype, r.archetype)}"
                    for _, r in asg.iterrows()}
     pc = PANELS / "ed_ifheat_nucleus.pdf"
-    hc = nucleus_row(ifdir / "nucleus_13_zones.csv", pc, width_mm=W - 12.0,
+    hc = nucleus_row(ifdir / "nucleus_13_zones.csv", pc, width_mm=PW,
                      n_sections=1, colors=ZONE_COLORS, scale_um=2,
-                     names=zone_labels, slabs=("xz",), legend_w=0.26)
+                     names=zone_labels, slabs=("xz",), legend_w=0.26, cell_max=38.0)
     ya = TOP
     yb = ya + ha + GAP
     yc = yb + hb + GAP
@@ -188,9 +191,9 @@ def ed_ifheat() -> Layout:
     return Layout(
         name=name, width_mm=W, height_mm=total,
         panels=[
-            Panel("a", pa, (W - 120.0) / 2, ya, label_dx=-4, label_dy=-5),
-            Panel("b", pb, (W - 150.0) / 2, yb, label_dx=-4, label_dy=-5),
-            Panel("c", pc, 6.0, yc, label_dx=-4, label_dy=-3),
+            Panel("a", pa, 6.0, ya, label_dx=-4, label_dy=-5),
+            Panel("b", pb, 6.0, yb, label_dx=-4, label_dy=-5),
+            Panel("c", pc, 6.0, yc, label_dx=-4, label_dy=-5),
         ],
     )
 

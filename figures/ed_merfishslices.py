@@ -1,4 +1,4 @@
-"""Extended Data: the five MERFISH slices, one row each, drawn from the cache.
+"""Supplementary Fig. 1: the five MERFISH slices, one column each, drawn from the cache.
 
 Replaces the composite of five pre-rendered rasters. Every panel comes from
 ``data/cache/merfish/revision_s<slice>.npz``, the cache the manuscript's
@@ -48,6 +48,17 @@ def table1_ari():
     with p.open() as fh:
         return {r["slice"].replace("MERFISH_", "").replace(".h5ad", ""):
                 float(r["ari_mean"]) for r in csv.DictReader(fh)}
+
+
+def _domain_names():
+    """Annotation classes in the order of the integer codes (alphabetical,
+    as evaluation.map_ground_truth codes them); from a dump that carries
+    them, else the published list."""
+    import json
+    p = paths.results("merfish") / "panels" / "segfree_maps_s0.19.json"
+    if p.exists():
+        return json.loads(p.read_text())["gt_names"]
+    return ["BST", "MPA", "MPN", "PV", "PVH", "PVT", "V3", "fx"]
 
 
 def _cache(slice_id):
@@ -136,10 +147,11 @@ def main():
     left_mm = 21.0
     cell_w = (W - left_mm - 1.0) / len(SLICES)
     row_h = cell_w * aspect
-    height = 4 * row_h + 5.0
+    key_mm = 10.0                     # a key row under the maps: domain colours and the two scales
+    height = 4 * row_h + 5.0 + key_mm
     fig, axes = ss.panel_grid(W, height, 4, len(SLICES))
     fig.subplots_adjust(left=left_mm / W, right=0.997, top=1 - 4.0 / height,
-                        bottom=0.004, wspace=0.035, hspace=0.05)
+                        bottom=key_mm / height, wspace=0.035, hspace=0.05)
 
     views = ["annotation", "smoothed expression\n(fiber PC1)",
              "sheaf field $\\tilde B$\n(rank)", "spSheaf domains"]
@@ -173,12 +185,41 @@ def main():
             if r == 0:
                 ax.set_title(f"Bregma {s_}", fontsize=T, pad=2)
             if r == 3:
-                ax.set_title(f"ARI {extra:.2f}", fontsize=T, pad=1.5,
-                             color=ss.METHOD_COLORS.get("spSheaf", "#333333"))
+                # inside the panel, on the empty corner above the section's
+                # shoulder, rather than as a title squeezed between two rows
+                ax.text(0.02, 0.98, f"ARI {extra:.2f}", transform=ax.transAxes,
+                        ha="left", va="top", fontsize=T,
+                        color=ss.METHOD_COLORS.get("spSheaf", "#333333"),
+                        bbox=dict(facecolor="white", edgecolor="none", pad=1.0, alpha=0.85))
     for r, name in enumerate(views):
         axes[r, 0].set_ylabel(name, fontsize=T, labelpad=3)
         axes[r, 0].yaxis.set_visible(True)
         axes[r, 0].set_yticks([])
+
+    # key row: the eight annotation classes (the colours of rows 1 and 4) and
+    # the two continuous scales, drawn once for the whole figure
+    from matplotlib import cm
+    from matplotlib.colors import Normalize
+    TICK = ss.TYPE_PT["normal"]["tick"]
+    names = _domain_names()
+    kx0 = left_mm / W
+    lax = fig.add_axes([kx0, 0.0, 0.50, key_mm / height])
+    lax.set_axis_off()
+    for i, nm in enumerate(names):
+        lax.scatter([], [], s=12, c=DOMAIN_COLORS[i], label=nm, marker="s", linewidths=0)
+    lax.scatter([], [], s=12, c=EMPTY, label="unannotated", marker="s", linewidths=0)
+    lax.legend(loc="center left", ncol=5, frameon=False, fontsize=TICK,
+               handletextpad=0.3, columnspacing=1.0, labelspacing=0.4, borderaxespad=0)
+    # the two scales, bar above and its name below, in the right half of the key row
+    bar_h = 1.6 / height
+    for j, (cmap, label) in enumerate([("viridis", "expression PC1 (2nd-98th percentile)"),
+                                       ("magma", "field rank (0-1)")]):
+        x0 = 0.60 + 0.21 * j
+        cax = fig.add_axes([x0, 5.2 / height, 0.16, bar_h])
+        cb = fig.colorbar(cm.ScalarMappable(norm=Normalize(0, 1), cmap=cmap),
+                          cax=cax, orientation="horizontal", ticks=[])
+        cb.outline.set_linewidth(0.4)
+        cax.text(0.5, -0.9, label, transform=cax.transAxes, ha="center", va="top", fontsize=TICK)
 
     out = OUTDIR / "ed_merfishslices.pdf"
     ss.save_panel(fig, out, strict=False)

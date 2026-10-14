@@ -34,7 +34,7 @@ def _grid_image(u, v, zone, ustep, vstep, ulim, vlim, ncol, palette=None):
 
 def nucleus_row(csv, path, width_mm=168.0, n_sections=6, label_prefix="zone",
                 colors=None, scale_um=None, names=None, slabs=("xz", "yz"),
-                legend_w=0.10):
+                legend_w=0.10, cell_max=30.0):
     """Draw the row and return its height in mm."""
     d = pd.read_csv(csv)
     zs = np.sort(d.z.unique())
@@ -43,7 +43,7 @@ def nucleus_row(csv, path, width_mm=168.0, n_sections=6, label_prefix="zone",
     else:
         pick = zs[np.linspace(0, len(zs) - 1, n_sections).round().astype(int)]
     n = n_sections + len(slabs)
-    cell = min((width_mm * (1 - legend_w) - 2.0) / n, 30.0)
+    cell = min((width_mm * (1 - legend_w) - 2.0) / n, cell_max)
     used = (n * cell + 2.0) / width_mm         # fraction of the canvas the maps need
     height = cell + 6.0                       # square cells plus a title line
     fig, axes = ss.panel_grid(width_mm, height, 1, n)

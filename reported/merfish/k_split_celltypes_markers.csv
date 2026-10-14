@@ -1,0 +1,18 @@
+slice,what,up,down
+0.19,smaller half vs larger (cells),Isl1 Amigo2 Esr1 Pou3f2 Crhbp Fbxw13 Arhgap36 Brs3,Fezf1 Necab1 Synpr Man1a Trhr Galr1 Ccnd2 Ndrg1
+0.19,I-23 vs other BST neurons,Oprk1 Galr1 Ndrg1 Cyp19a1 Trhr Ano3 Scgn Baiap2,Isl1 Cbln1 Ntsr1 Esr1 Tacr1 Sema3c Col25a1 Man1a
+0.19,E-4 vs other BST neurons,Fezf1 Slc17a6 Nos1 Serpinb1b Cxcl14 Ttyh2 Pcdh11x Calcr,Cyp19a1 Arhgap36 Oprk1 Gad1 Ramp3 Scgn Coch Ntsr1
+0.19,I-9 vs other BST neurons,Necab1 Sp9 Adora2a Avpr1a Cpne5 Ccnd2 Cckbr Crhr1,Fezf1 Crhbp Cbln1 Isl1 Arhgap36 Scgn Rxfp1 Serpinb1b
+0.19,I-18 vs other BST neurons,Col25a1 Cxcl14 Ramp3 Man1a Crhr1 Opalin Ccnd2 Slc17a7,Arhgap36 Brs3 Cbln1 Oprk1 Calcr Serpinb1b Dgkk Fezf1
+0.19,I-1 vs other BST neurons,Sox6 Mlc1 Rxfp1 Mki67 Slc15a3 Slc17a8 Aqp4 Lpar1,Greb1 Crhbp Oprk1 Chat Brs3 Cyp19a1 Galr1 Slc18a2
+0.19,I-2 vs other BST neurons,Brs3 Crhbp Greb1 Etv1 Prlr Esr1 Dgkk Ermn,Fezf1 Isl1 Ano3 Calcr Cxcl14 Nos1 Slc17a6 Synpr
+0.19,I-13 vs other BST neurons,Isl1 Arhgap36 Amigo2 Slc18a2 Fbxw13 Gpr165 Coch Pou3f2,Tacr1 Fezf1 Trhr Necab1 Synpr Brs3 Slc17a6 Cbln1
+0.24,smaller half vs larger (cells),Isl1 Arhgap36 Ntsr1 Amigo2 Fbxw13 Gpr165 Coch Slc18a2,Fezf1 Syt2 Necab1 Galr1 Tacr1 Sema3c Tacr3 Ccnd2
+0.24,E-13 vs other BST neurons,Fezf1 Cbln1 Slc17a6 Necab1 Npy2r Npy1r Fn1 Syt2,Isl1 Gad1 Pou3f2 Scgn Arhgap36 Cxcl14 Cdkn1a Rxfp1
+0.24,I-23 vs other BST neurons,Oprk1 Galr1 Cyp19a1 Ndrg1 Scgn Trhr Ano3 Synpr,Isl1 Cbln1 Calcr Ntsr1 Esr1 Syt2 Serpinb1b Tacr1
+0.24,I-25 vs other BST neurons,Tacr1 Adora2a Htr2c Ccnd2 Tiparp Dgkk Sox6 Cenpe,Calcr Cbln1 Syt2 Ano3 Cyp26a1 Sp9 Gabra1 Glra3
+0.24,E-4 vs other BST neurons,Fezf1 Serpinb1b Nos1 Slc17a6 Galr1 Pcdh11x Cxcl14 Ano3,Scgn Gad1 Isl1 Oprk1 Greb1 Rxfp1 Sp9 Krt90
+0.24,I-9 vs other BST neurons,Necab1 Sp9 Cpne5 Greb1 Cckbr Crhr1 Cdkn1a Gbx2,Cbln1 Tiparp Galr1 Fezf1 Isl1 Crhbp Esr1 Slco1a4
+0.24,I-2 vs other BST neurons,Crhbp Brs3 Greb1 Prlr Sox6 Cyp19a1 Dgkk Etv1,Fezf1 Gbx2 Synpr Ano3 Cckbr Ebf3 Slc18a2 Cxcl14
+0.24,E-16 vs other BST neurons,Cbln1 Calcr Omp Crhr2 Bdnf Slc17a6 Irs4 Cbln2,Gad1 Sp9 Crhr1 Scgn Fezf1 Oprk1 Sema3c Ramp3
+0.24,I-13 vs other BST neurons,Isl1 Arhgap36 Amigo2 Esr1 Gpr165 Pou3f2 Rgs2 Gabrg1,Tacr1 Fezf1 Necab1 Slc17a6 Cbln1 Galr1 Man1a Calcr

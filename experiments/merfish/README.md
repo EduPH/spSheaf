@@ -23,6 +23,7 @@ make revision SLICE=...              # the three above; loop over the five slice
 make merfish-reference-field         # local vs tissue reference at interfaces (Sec 2.9)
 make merfish-k-selection             # k = 2..16 on one slice: silhouette, grid-phase stability, seed control (SLICE=...)
 make merfish-k-split                 # k = 8, 9, 10 on the five slices, then the division record (k_split_*.csv)
+make merfish-graph-k                 # k_graph = 4, 6, 8: the square lattice's tie-break does not matter (graph_k.csv)
 make panels-segfree                  # per-cell maps of slice 0.19 for Fig 2a
 make panels-multislice               # gene-centroid registration of the five slices: Supplementary Fig. 2
 make merfish-section-all             # everything above, in order (hours)
@@ -59,6 +60,17 @@ slices; grid-phase stability is not usable on a single section (upper bound
 seed control). At k = 9 the BST divides the same way on slices 0.19 and 0.24
 (r = 0.84 between the per-gene differences) and the MPN on 0.04 and 0.09
 (r = 0.88); the 26-division record is `k_split_events.csv`.
+The two BST halves hold different neuronal populations of the Moffitt cell
+table: the smaller (Isl1/Esr1/Amigo2) half holds 83–86 % of cluster I-13 and
+74–75 % of I-2 on both sections, the larger half I-23, E-4, I-9 and I-25;
+per-cluster log odds correlate at r = 0.94 across the two sections
+(`k_split_celltypes*.csv`, Fig. 4e).
+
+Spatial graph: on the square lattice k_graph = 6 keeps the four axis
+neighbours and two of the four tied diagonals (symmetrised: interior degree
+6–8, both orientations equally); k_graph = 4 and 8, the isotropic
+alternatives, give five-slice ARI 0.575 and 0.577 against 0.576, within
+0.002 on every slice (`graph_k.csv`).
 
 ## Files
 
@@ -68,6 +80,8 @@ experiments), `reference_field.py`, `multislice_alignment.py` /
 `multislice_panels.py`, `segfree_panels.py`, `k_selection.py` (the k
 criteria on one slice), `k_split.py` + `k_split_analysis.py` +
 `k_split_table.py` (divisions at k = 9, 10; the manuscript's division table),
+`k_split_celltypes.py` (the Moffitt neuronal clusters in the BST halves),
+`graph_k.py` (k_graph sensitivity),
 `method_validation.py` (synthetic check, `make method-validation`; not in the
 paper). Tracked copies of every
 table are under `../../reported/merfish/`.

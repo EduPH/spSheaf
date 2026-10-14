@@ -23,6 +23,8 @@ from experiments.spacetx.run_spacetx import build_parser, load, register
 def main():
     p = build_parser()
     p.add_argument("--k-nbrs", type=int, default=50)
+    p.add_argument("--tag", default="",
+                   help="suffix for the cache file, to keep caches at several scales side by side")
     a = p.parse_args()
     if a.reference is not None:
         sheaf.REFERENCE = a.reference
@@ -51,7 +53,7 @@ def main():
 
     fib_global = fib - fib.mean(axis=0)
     fib_local = fib - sheaf.local_means(fib, grid, a.k_nbrs)
-    out = paths.cache("spacetx") / f"ablation_{a.dataset}.npz"
+    out = paths.cache("spacetx") / f"ablation_{a.dataset}{a.tag}.npz"
     np.savez_compressed(
         out, grid=grid, fib=fib.astype(np.float32),
         fib_global=fib_global.astype(np.float32), fib_local=fib_local.astype(np.float32),

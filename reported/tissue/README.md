@@ -51,5 +51,5 @@ Produced by `make spacetx-all`.
 
 | file | supports | copied from (under the results root) |
 | --- | --- | --- |
-| `sheaf_ablation_*.csv` | Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx section at its selected configuration (`make spacetx-ablation`; tissue reference, so present under reported/tissue/) | `spacetx/sheaf_ablation_*.csv` |
+| `sheaf_ablation_*.csv` | Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx section at its selected configuration (`make spacetx-ablation`; tissue reference; the `_merfishscales` files are the same arms at h 25, sigma_s 60, not in the paper, see the private notes) (tissue reference, so present under reported/tissue/) | `spacetx/sheaf_ablation_*.csv` |
 

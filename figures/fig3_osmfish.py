@@ -110,8 +110,11 @@ def _scalebar(ax, xy, um=SCALEBAR_UM):
     y0 = xy[:, 1].min() - 300
     ax.plot([x0, x0 + px], [y0, y0], color=INK, lw=1.3, solid_capstyle="butt",
             clip_on=False)
-    ax.text(x0 + px / 2, y0 - 900, f"{um:g} $\\mu$m", fontsize=TICK, color=INK,
-            ha="center", va="bottom", clip_on=False)
+    # the label sits a fixed 2.5 pt above the bar whichever way the data
+    # axis runs (osmFISH pixel y is flipped relative to the annotation)
+    ax.annotate(f"{um:g} $\\mu$m", (x0 + px / 2, y0), xytext=(0, 2.5),
+                textcoords="offset points", fontsize=TICK, color=INK,
+                ha="center", va="bottom", annotation_clip=False)
 
 
 def _caption(ax, text):
@@ -314,8 +317,10 @@ def main():
             Panel("c", PANELS / "f3c.pdf", x=92,  y=5,  label_dx=-3, label_dy=-4),
             Panel("d", PANELS / "f3d.pdf", x=136, y=5,  label_dx=-3, label_dy=-4),
             Panel(None, PANELS / "f3leg.pdf", x=20, y=68),
-            Panel("e", PANELS / "f3e.pdf", x=4,   y=80, label_dx=-3, label_dy=-4),
-            Panel("f", PANELS / "f3f.pdf", x=48,  y=80, label_dx=-3, label_dy=-4),
+            # e, f and g share one letter baseline (83 mm): the field panels
+            # carry white space above the map, the bar chart does not
+            Panel("e", PANELS / "f3e.pdf", x=4,   y=80, label_dx=-3, label_dy=3),
+            Panel("f", PANELS / "f3f.pdf", x=48,  y=80, label_dx=-3, label_dy=3),
             Panel("g", PANELS / "f3g.pdf", x=96,  y=88, label_dx=-4, label_dy=-5),
         ],
     )

@@ -1,4 +1,4 @@
-"""Extended Data Fig. 7 -- multi-slice alignment across serial sections.
+"""Supplementary Fig. 2 -- multi-slice alignment across serial sections.
 
 Drawn from ``data/results/merfish/panels/multislice.npz`` (written by
 ``python -m experiments.merfish.multislice_panels``).
@@ -62,9 +62,30 @@ def panel_a(arr, meta, path):
     ss.save_panel(fig, path)
 
 
+def domain_names():
+    """Annotation classes in the order of the integer labels (alphabetical,
+    as evaluation.map_ground_truth codes them); read from a panel dump that
+    carries them, else the published list."""
+    p = paths.results("merfish") / "panels" / "segfree_maps_s0.19.json"
+    if p.exists():
+        return json.loads(p.read_text())["gt_names"]
+    return ["BST", "MPA", "MPN", "PV", "PVH", "PVT", "V3", "fx"]
+
+
+def legend_strip(path, names):
+    """The domain colours of panel a, two rows of four, beside panel b."""
+    fig, ax = ss.panel(60, 14)
+    ax.set_axis_off()
+    for i, nm in enumerate(names):
+        ax.scatter([], [], s=14, c=DOMAIN_COLORS[i], label=nm, linewidths=0, marker="s")
+    ax.legend(loc="center", ncol=4, frameon=False, fontsize=ss.TYPE_PT["normal"]["tick"],
+              handletextpad=0.4, columnspacing=1.6, labelspacing=0.5, borderaxespad=0)
+    ss.save_panel(fig, path, strict=False)
+
+
 def panel_b(meta, path):
-    fig, ax = ss.panel(84, 44)
-    fig.subplots_adjust(left=0.16, right=0.97, top=0.92, bottom=0.22)
+    fig, ax = ss.panel(104, 44)
+    fig.subplots_adjust(left=0.13, right=0.98, top=0.92, bottom=0.22)
     tags = [s.replace("MERFISH_", "").replace(".h5ad", "") for s in meta["slices"]]
     names = [f"{tags[i]} → {tags[j]}" for i, j in meta["pairs"]]
     vals = meta["agreement"]
@@ -102,11 +123,16 @@ def main():
     arr, meta = load()
     panel_a(arr, meta, PANELS / "edms_a.pdf")
     panel_b(meta, PANELS / "edms_b.pdf")
+    legend_strip(PANELS / "edms_leg.pdf", domain_names())
+    # a spans the width; b sits at the left margin under it, with the domain
+    # legend of a in the space to its right, so the canvas carries no empty
+    # band and the panel letters share one left edge
     lay = Layout(
-        name="ed_multislice", width_mm=180.0, height_mm=102.0,
+        name="ed_multislice", width_mm=180.0, height_mm=92.0,
         panels=[
-            Panel("a", PANELS / "edms_a.pdf", x=6, y=5, label_dx=-4, label_dy=-3),
-            Panel("b", PANELS / "edms_b.pdf", x=48, y=52, label_dx=-4, label_dy=-5),
+            Panel("a", PANELS / "edms_a.pdf", x=6, y=4, label_dx=-4, label_dy=-2),
+            Panel("b", PANELS / "edms_b.pdf", x=6, y=46, label_dx=-4, label_dy=-2),
+            Panel(None, PANELS / "edms_leg.pdf", x=116, y=58),
         ],
     )
     print(lay.summary())

@@ -1,0 +1,4 @@
+slice_a,slice_b,n_clusters,r,n_sig,n_sign_agree,hemispheric
+0.14,0.19,7,-0.7860595208652426,7,0,True
+0.14,0.24,7,-0.7708923213861386,6,0,True
+0.19,0.24,8,0.9360822410950922,8,8,False

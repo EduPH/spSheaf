@@ -70,9 +70,22 @@ def scatter(ax, x, y, genes, slices, T, TICK):
     ax.plot([-lim, lim], [-lim, lim], "--", color="#999999", lw=0.5, zorder=2)
     ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
     score = x + y
-    for j in list(np.argsort(score)[:4]) + list(np.argsort(-score)[:4]):
-        ax.annotate(genes[j], (x[j], y[j]), xytext=(2.5, 1.5), textcoords="offset points",
-                    fontsize=TICK, color=C_A if score[j] > 0 else C_B)
+    # gene names in two stacks clear of the points -- the "blue" genes down
+    # the right edge from the top, the "orange" genes up the left edge from
+    # the bottom -- each joined to its point by a hairline, so no two labels
+    # overlap whatever the points do; gene symbols in italics
+    up = sorted(np.argsort(-score)[:4], key=lambda j: -y[j])
+    down = sorted(np.argsort(score)[:4], key=lambda j: x[j])
+    # blue: a column down the right edge; orange: a row along the bottom edge
+    # to the right of their points, where the lower-right quadrant is empty
+    places = [(j, 0.985, 0.985 - i * 0.085, "right") for i, j in enumerate(up)]
+    places += [(j, 0.24 + i * 0.19, 0.04, "left") for i, j in enumerate(down)]
+    for j, xa, ya, ha in places:
+        ax.annotate(genes[j], (x[j], y[j]), xytext=(xa, ya),
+                    textcoords="axes fraction", fontsize=TICK, fontstyle="italic",
+                    color=C_A if score[j] > 0 else C_B, ha=ha, va="center",
+                    arrowprops=dict(arrowstyle="-", color="#AAAAAA", lw=0.35,
+                                    shrinkA=0, shrinkB=1.5), zorder=4)
     for sp in ("top", "right"):
         ax.spines[sp].set_visible(False)
     ax.tick_params(labelsize=TICK, length=1.6, pad=1.5)
@@ -81,6 +94,58 @@ def scatter(ax, x, y, genes, slices, T, TICK):
     ax.set_title(f"mean fiber difference per gene, $r$ = {r_:.2f}", fontsize=T,
                  color=INK, pad=3)
     return r_
+
+
+def composition(ax, T, TICK):
+    """Panel e: the neuronal clusters of Moffitt et al. in the two BST halves.
+    For every cluster with >= 20 cells, the fraction of its cells that fall in
+    the orange half, on each of the two posterior sections; the dashed line
+    is the fraction of all BST neurons in that half, so a cluster on the line
+    is split like the domain and one far from it is concentrated in one
+    half (experiments/merfish/k_split_celltypes.py)."""
+    import pandas as pd
+    src = HERE.parent / "reported" / "merfish" / "k_split_celltypes.csv"
+    if not src.exists():
+        src = paths.results("merfish") / "k_split_celltypes.csv"
+    ct = pd.read_csv(src)
+    ct = ct[~ct.cluster.str.startswith("class:") & ct.slice.isin([0.19, 0.24])]
+    piv = ct.pivot(index="cluster", columns="slice", values="frac_in_smaller")
+    q = ct.pivot(index="cluster", columns="slice", values="q")
+    n = ct.pivot(index="cluster", columns="slice", values="n")
+    both = piv.dropna().index
+    order = piv.loc[both].mean(1).sort_values().index
+    base = {}
+    for sl in (0.19, 0.24):
+        d = ct[ct.slice == sl]
+        base[sl] = d.n_smaller.sum() / d.n.sum()
+    x = np.arange(len(order))
+    style = {0.19: dict(marker="o", facecolors=C_B, edgecolors=C_B),
+             0.24: dict(marker="s", facecolors="white", edgecolors=C_B)}
+    for sl, dx in ((0.19, -0.16), (0.24, 0.16)):
+        ax.axhline(base[sl], color=C_B if sl == 0.19 else "#999999", lw=0.5,
+                   ls=(0, (3, 2)), zorder=1)
+        ax.scatter(x + dx, piv.loc[order, sl], s=11, linewidths=0.6, zorder=3, **style[sl])
+        for i, cl in enumerate(order):
+            if q.loc[cl, sl] < 0.01:
+                ax.text(x[i] + dx, piv.loc[cl, sl] + 0.05, "*", ha="center", va="bottom",
+                        fontsize=TICK, color=INK)
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{cl}\n{int(n.loc[cl].min())}-{int(n.loc[cl].max())}" for cl in order],
+                       fontsize=TICK)
+    ax.set_ylim(-0.03, 1.08); ax.set_yticks([0, 0.5, 1])
+    ax.set_xlim(-0.6, len(order) - 0.4)
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(False)
+    ax.tick_params(labelsize=TICK, length=1.6, pad=1.5)
+    ax.set_ylabel("fraction of the cluster's\ncells in the orange half", fontsize=T, labelpad=2)
+    ax.set_xlabel("neuronal cluster of Moffitt et al. (cells per section)", fontsize=T)
+    h = [ax.scatter([], [], s=11, linewidths=0.6, **style[0.19]),
+         ax.scatter([], [], s=11, linewidths=0.6, **style[0.24])]
+    ax.legend(h, ["Bregma 0.19", "Bregma 0.24"], loc="lower right", frameon=False,
+              fontsize=TICK, handletextpad=0.3, borderaxespad=0.2, ncol=2, columnspacing=1.0)
+    ax.text(len(order) - 0.4, max(base.values()) + 0.03, "all BST neurons", ha="right",
+            va="bottom", fontsize=TICK, color="#666666")
+    ax.set_title("neuronal clusters in the two BST halves (* $q < 0.01$)", fontsize=T, color=INK, pad=3)
 
 
 def main():
@@ -97,7 +162,8 @@ def main():
     row_h = map_w * aspect
     gap_case = 5.0
     n_rows = sum(len(c[1]) for c in CASES)
-    height = 8.0 + n_rows * row_h + (n_rows - 1) * 1.0 + (len(CASES) - 1) * gap_case + 4.0
+    comp_h = 40.0                     # panel e, the cluster composition of the BST halves
+    height = 8.0 + n_rows * row_h + (n_rows - 1) * 1.0 + (len(CASES) - 1) * gap_case + 4.0 + comp_h
     fig, ax0 = ss.panel(W, height); ax0.remove()
     left = 9.0
     sx = left + 4 * (map_w + 1.0) + 12.0
@@ -122,7 +188,7 @@ def main():
             panels = [("rgba", col, f"annotated {domain}"),
                       ("rgba", col2, f"{domain} at $k$ = {K}")]
             for g, j in zip(gene_pair, gi):
-                panels.append(("field", np.where(under, F[:, j], np.nan), f"{g} fiber"))
+                panels.append(("field", np.where(under, F[:, j], np.nan), (g, " fiber")))
             for c, (kind, arr, title) in enumerate(panels):
                 ax = fig.add_axes([(left + c * (map_w + 1.0)) / W,
                                    1 - (y + row_h) / height, map_w / W, row_h / height])
@@ -139,7 +205,15 @@ def main():
                 ax.set_xlim(grid[:, 0].min(), grid[:, 0].max())
                 ax.set_ylim(grid[:, 1].min(), grid[:, 1].max())
                 if s == slices[0]:
-                    ax.set_title(title, fontsize=T, pad=2, color=INK)
+                    if isinstance(title, tuple):
+                        # gene symbol in italics, the word after it upright:
+                        # two text objects, the second anchored to the first
+                        t1 = ax.text(0.42, 1.03, title[0], transform=ax.transAxes, ha="right",
+                                     va="bottom", fontsize=T, color=INK, fontstyle="italic")
+                        ax.annotate(title[1], (1, 0), xycoords=t1, ha="left", va="bottom",
+                                    fontsize=T, color=INK)
+                    else:
+                        ax.set_title(title, fontsize=T, pad=2, color=INK)
                 if c == 0:
                     ax.text(-0.04, 0.5, f"Bregma {s}", transform=ax.transAxes,
                             rotation=90, va="center", ha="right", fontsize=T, color=INK)
@@ -158,6 +232,14 @@ def main():
                  fontsize=8, fontweight="bold", va="bottom", ha="left")
         rs.append((domain, r_))
         y += gap_case - 1.0
+
+    # panel e under the maps, full width
+    y += 2.0
+    eax = fig.add_axes([(left + 10.0) / W, 1 - (y + comp_h - 11.0) / height,
+                        (W - left - 10.0 - 4.0) / W, (comp_h - 15.0) / height])
+    composition(eax, T, TICK)
+    fig.text((left - 7.5) / W, 1 - (y - 1.0) / height, next(letters),
+             fontsize=8, fontweight="bold", va="bottom", ha="left")
 
     out = OUTDIR / "fig5.pdf"
     ss.save_panel(fig, out, strict=False)

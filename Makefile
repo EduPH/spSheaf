@@ -1,7 +1,7 @@
 .PHONY: help install install-pinned install-benchmark install-figures requirements test \
         merfish merfish-seeds merfish-section-all merfish-loo-cv local-all reference-check \
         cache boundary-eval method-validation sheaf-ablation k-sensitivity revision \
-        merfish-reference-field k-selection merfish-k-selection merfish-k-split \
+        merfish-reference-field k-selection merfish-k-selection merfish-k-split merfish-graph-k \
         figure-kselection spacetx-ablation matched-selection-union \
         osmfish osmfish-seeds osmfish-all osmfish-insample osmfish-insample-tissue \
         osmfish-diagnose osmfish-rule \
@@ -10,7 +10,7 @@
         spacetx-ficture-labels spacetx-insample-grid spacetx-insample-panels \
         segfree segfree-inputs matched-selection benchmark-table benchmark-table-check \
         figures figures-verify figures-test figures-all figures-audit figures-panels \
-        panels-osmfish panels-pecab panels-segfree panels-multislice \
+        panels-osmfish panels-pecab pecab-edge panels-segfree panels-multislice \
         reported reported-check reported-tissue reported-tissue-check clean-cache
 help:
 	@grep -E '^[a-z-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -117,6 +117,9 @@ panels-pecab:       ## re-run both PECAb replicates and dump their panel data
 	  --input $(PECAB_RAW)/6_raw_SiPECAb_Rep2.csv \
 	  --output-dir data/results/pecab/output_pecab_signaling_Rep2
 
+pecab-edge:         ## EMT score and field across the mesenchymal compartment's edge (ED Fig. 8g,h)
+	python -m experiments.pecab.edge_profiles
+
 segfree-inputs:     ## report which benchmark inputs are available
 	python -m benchmarks.segfree.inputs
 
@@ -158,10 +161,15 @@ k-selection:        ## can k be chosen without labels? synthetic tissue, known k
 merfish-k-selection: ## the same k procedure on a real annotated section (~45 min, resumable; SLICE=...)
 	python -m experiments.merfish.k_selection --slice $(SLICE) --k 2 16
 
+merfish-graph-k:    ## k_graph = 4, 6, 8 on the five slices: does the square lattice's tie-break matter? (~30 min)
+	python -m experiments.merfish.graph_k --seeds 3
+
 merfish-k-split:    ## which annotated domain divides at k = 9, 10: runs on the five slices, then the division record
 	for s in 0.04 0.09 0.14 0.19 0.24; do python -m experiments.merfish.k_split --slice MERFISH_$$s.h5ad; done
 	python -m experiments.merfish.k_split_analysis
 	python -m experiments.merfish.k_split_table
+	python -m experiments.merfish.k_split_celltypes
+	python -m experiments.merfish.k_split_celltypes --markers
 
 figure-kselection:  ## draw the k-selection curves (not one of the paper's 13 figures)
 	cd $(FIGDIR) && python ed_kselection.py
