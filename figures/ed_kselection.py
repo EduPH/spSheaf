@@ -39,9 +39,9 @@ W = 180.0
 
 #: (key, column heading, second line, label for the orange reference curve)
 COLUMNS = [
-    ("flat", "synthetic, well separated", "$k$ is a fact"),
-    ("nested", "synthetic, two sibling pairs", "$k$ is a convention"),
-    ("merfish", "MERFISH, five real sections", "$k$ annotated as 8"),
+    ("flat", "synthetic, well separated", "generating $K$ = 6"),
+    ("nested", "synthetic, two sibling pairs", "generating $K$ = 6"),
+    ("merfish", "MERFISH, five sections", "annotated $k$ = 8"),
 ]
 #: true of every column; what the reference partition IS differs, and the
 #: header says so, but one legend is better than three
@@ -126,9 +126,9 @@ def main():
     T = ss.TYPE_PT["normal"]["text"]
     TICK = ss.TYPE_PT["normal"]["tick"]
 
-    height = 99.0
+    height = 92.0
     fig, axes = ss.panel_grid(W, height, 2, len(COLUMNS), sharex="col")
-    fig.subplots_adjust(left=13.0 / W, right=0.995, top=1 - 13.5 / height,
+    fig.subplots_adjust(left=13.0 / W, right=0.995, top=1 - 7.0 / height,
                         bottom=10.0 / height, wspace=0.17, hspace=0.16)
     axes = np.atleast_2d(axes)
 
@@ -178,13 +178,7 @@ def main():
             top.legend(loc="lower right", fontsize=TICK, frameon=False,
                        handlelength=1.4, borderpad=0.1, labelspacing=0.22)
 
-    fig.text(13.0 / W, 1 - 1.2 / height,
-             "Annotation-free criteria against $k$. The reference partition is the "
-             "generating domains (synthetic) or the annotation (MERFISH); the band is "
-             "two data seeds\nfor the synthetic designs and the five sections for "
-             "MERFISH. Dashed, that reference's $k$; shaded, the interval the two "
-             "criteria return on the pooled curves.",
-             fontsize=TICK, va="top", ha="left", color=INK, linespacing=1.5)
+    # (the explanatory line that used to sit above the panels is in the caption)
 
     out = OUTDIR / "ed_kselection.pdf"
     ss.save_panel(fig, out, strict=False)

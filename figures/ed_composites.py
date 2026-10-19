@@ -181,9 +181,10 @@ def ed_ifheat() -> Layout:
     zone_labels = {int(r.zone): f"zone {int(r.zone)} \u00b7 {SHORT.get(r.archetype, r.archetype)}"
                    for _, r in asg.iterrows()}
     pc = PANELS / "ed_ifheat_nucleus.pdf"
-    hc = nucleus_row(ifdir / "nucleus_13_zones.csv", pc, width_mm=PW,
+    # c: two 38-mm maps and the legend, no empty band to the right
+    hc = nucleus_row(ifdir / "nucleus_13_zones.csv", pc, width_mm=120.0,
                      n_sections=1, colors=ZONE_COLORS, scale_um=2,
-                     names=zone_labels, slabs=("xz",), legend_w=0.26, cell_max=38.0)
+                     names=zone_labels, slabs=("xz",), legend_w=0.34, cell_max=38.0)
     ya = TOP
     yb = ya + ha + GAP
     yc = yb + hb + GAP

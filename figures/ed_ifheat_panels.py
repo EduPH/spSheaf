@@ -34,7 +34,7 @@ def zone_mark_heatmap(prof_csv, sizes_csv, path, width_mm=168.0):
 
     n_row, n_col = prof.shape
     row_mm, cbar_mm = 4.6, 2.6
-    left_mm, right_mm = 46.0, 34.0
+    left_mm, right_mm = 34.0, 34.0          # just the row labels on the left; counts and the bar on the right
     top_mm, bottom_mm = 1.5, 17.0          # bottom carries the rotated marks
     height = top_mm + n_row * row_mm + bottom_mm
     fig, ax = ss.panel(width_mm, height)

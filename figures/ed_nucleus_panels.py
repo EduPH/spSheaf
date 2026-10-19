@@ -43,16 +43,30 @@ def nucleus_row(csv, path, width_mm=168.0, n_sections=6, label_prefix="zone",
     else:
         pick = zs[np.linspace(0, len(zs) - 1, n_sections).round().astype(int)]
     n = n_sections + len(slabs)
-    cell = min((width_mm * (1 - legend_w) - 2.0) / n, cell_max)
-    used = (n * cell + 2.0) / width_mm         # fraction of the canvas the maps need
-    height = cell + 6.0                       # square cells plus a title line
-    fig, axes = ss.panel_grid(width_mm, height, 1, n)
-    fig.subplots_adjust(left=0.006, right=min(used, 1 - legend_w), top=0.80,
-                        bottom=0.03, wspace=0.06)
     xs, ys = np.sort(d.x.unique()), np.sort(d.y.unique())
     xstep, ystep = np.diff(xs).min(), np.diff(ys).min()
     zstep = np.diff(zs).min() if len(zs) > 1 else xstep
     xr, yr, zr = (xs.min(), xs.max()), (ys.min(), ys.max()), (zs.min(), zs.max())
+    # every map at one physical scale: axes widths follow the data extents,
+    # the row is as tall as the tallest map, and each map hangs from its
+    # title, so no blank band separates the two
+    ext = [(xr[1] - xr[0] + xstep, yr[1] - yr[0] + ystep)] * n_sections
+    if "xz" in slabs:
+        ext.append((xr[1] - xr[0] + xstep, zr[1] - zr[0] + zstep))
+    if "yz" in slabs:
+        ext.append((yr[1] - yr[0] + ystep, zr[1] - zr[0] + zstep))
+    gap = 0.06 * cell_max
+    avail = width_mm * (1 - legend_w) - 2.0 - gap * (n - 1)
+    scale = min(avail / sum(w for w, _ in ext), cell_max / max(h for _, h in ext))
+    widths = [w * scale for w, _ in ext]
+    tall = max(h for _, h in ext) * scale
+    used = (sum(widths) + gap * (n - 1) + 2.0) / width_mm
+    height = tall + 6.0                       # the tallest map plus a title line
+    fig, axes = ss.panel_grid(width_mm, height, 1, n,
+                              gridspec_kw={"width_ratios": widths})
+    fig.subplots_adjust(left=0.006, right=min(used, 1 - legend_w),
+                        top=1.0 - 4.5 / height, bottom=0.03,
+                        wspace=gap * n / sum(widths))
     T = ss.TYPE_PT["normal"]["tick"]
     palette = list(colors) if colors is not None else ZONE_COLORS
     ncol = len(palette)
@@ -63,7 +77,7 @@ def nucleus_row(csv, path, width_mm=168.0, n_sections=6, label_prefix="zone",
                        extent=(ulim[0] - ustep / 2, ulim[1] + ustep / 2,
                                vlim[0] - vstep / 2, vlim[1] + vstep / 2))
         ss.rasterize(im, dpi=600)
-        ax.set_aspect("equal")
+        ax.set_aspect("equal", anchor="N")
         ax.set_title(title, fontsize=T, pad=1.5)
 
     for ax, z in zip(axes[:n_sections], pick):

@@ -7,6 +7,17 @@ gives each vertex a local principal-subspace stalk, scores every edge by its
 after the stalks are aligned — and attenuates those transitions during
 clustering. Paluzo-Hidalgo, Maehara & Imoto, Nature Methods (submitted).
 
+![The spSheaf construction on a 530 × 400 µm window of a MERFISH hypothalamus section](docs/assets/spsheaf_method.gif)
+
+*The construction on real data (MERFISH slice 0.19 of Moffitt et al. 2018, a
+530 × 400 µm window; every quantity computed by spSheaf at the paper's
+settings). Molecules and the 15 µm grid; the Gaussian-kernel fiber of one grid
+point and one of its components as a smoothed field; the kNN graph; the stalks
+standing over the vertices; one edge across an interface, its two stalks
+aligned by the SVD of their overlap and the disagreement D(e) between the
+transported coordinates; every edge scored; the smoothed boundary field over
+the tissue; the domains.*
+
 ## Install
 
 ```bash

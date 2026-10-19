@@ -43,16 +43,30 @@ ALLEN_COLORS = ["#0072B2", "#56B4E9", "#009E73", "#2CA02C", "#E69F00",
 W_MM, H_MM = 56.0, 44.0
 
 
+#: b, c and d share one axes rectangle and one data window, so the three
+#: brains come out at the same size and height; the colour bar of c and the
+#: legend of d sit in the band below the map
+AX_RECT = [0.01, 0.17, 0.98, 0.75]
+
+
+def _limits():
+    d = pd.read_csv(RES / "domain_labels.csv")
+    pad = 0.02 * max(np.ptp(d.x), np.ptp(d.y))
+    return (d.x.min() - pad, d.x.max() + pad), (d.y.min() - pad, d.y.max() + pad)
+
+
 def _map(ax, x, y, colors):
     ss.spatial(ax)
     sc = ax.scatter(x, y, s=1.6, c=colors, marker="s", linewidths=0)
     ss.rasterize(sc, dpi=600)
+    xl, yl = _limits()
+    ax.set_xlim(*xl); ax.set_ylim(*yl)
+    return sc
 
 
 def panel_domains(path):
     d = pd.read_csv(RES / "domain_labels.csv")
-    fig, ax = ss.panel(W_MM, H_MM)
-    fig.subplots_adjust(left=0.01, right=0.99, top=0.92, bottom=0.01)
+    fig, ax = ss.panel(W_MM, H_MM); ax.remove(); ax = fig.add_axes(AX_RECT)
     _map(ax, d.x, d.y, np.array(DOMAIN_COLORS)[d.label.values % len(DOMAIN_COLORS)])
     ax.set_title(f"{d.label.nunique()} sheaf domains", fontsize=ss.TYPE_PT["normal"]["text"], pad=2)
     ss.save_panel(fig, path)
@@ -60,17 +74,18 @@ def panel_domains(path):
 
 def panel_boundary(path):
     b = pd.read_csv(RES / "boundary_field.csv")
-    fig, ax = ss.panel(W_MM, H_MM)
-    fig.subplots_adjust(left=0.01, right=0.86, top=0.92, bottom=0.01)
+    fig, ax = ss.panel(W_MM, H_MM); ax.remove(); ax = fig.add_axes(AX_RECT)
     ss.spatial(ax)
     v = b.boundary_smooth.values
     sc = ax.scatter(b.x, b.y, s=1.6, c=v, cmap="inferno", marker="s", linewidths=0,
                     vmin=np.percentile(v, 1), vmax=np.percentile(v, 99))
     ss.rasterize(sc, dpi=600)
-    cax = fig.add_axes([0.88, 0.15, 0.025, 0.6])
-    cb = fig.colorbar(sc, cax=cax)
-    cb.set_label("smoothed boundary score", fontsize=ss.TYPE_PT["normal"]["tick"])
-    cb.ax.tick_params(labelsize=ss.TYPE_PT["normal"]["tick"], length=1.5)
+    xl, yl = _limits()
+    ax.set_xlim(*xl); ax.set_ylim(*yl)
+    cax = fig.add_axes([0.25, 0.075, 0.5, 0.035])
+    cb = fig.colorbar(sc, cax=cax, orientation="horizontal")
+    cax.set_title("smoothed boundary score", fontsize=ss.TYPE_PT["normal"]["tick"], pad=2)
+    cb.ax.tick_params(labelsize=ss.TYPE_PT["normal"]["tick"], length=1.5, pad=1.5)
     cb.outline.set_linewidth(0.4)
     ax.set_title("sheaf boundary field", fontsize=ss.TYPE_PT["normal"]["text"], pad=2)
     ss.save_panel(fig, path)
@@ -80,8 +95,7 @@ def panel_allen(path):
     a = pd.read_csv(RES / "allen_reference_labels.csv")
     m = a.allen_division != "outside"
     idx = a.loc[m, "allen_division"].map({k: i for i, k in enumerate(ALLEN_ORDER)}).values
-    fig, ax = ss.panel(W_MM, H_MM)
-    fig.subplots_adjust(left=0.01, right=0.99, top=0.92, bottom=0.16)
+    fig, ax = ss.panel(W_MM, H_MM); ax.remove(); ax = fig.add_axes(AX_RECT)
     _map(ax, a.x[m], a.y[m], np.array(ALLEN_COLORS)[idx])
     ax.set_title("Allen CCFv3 divisions (rigid registration)",
                  fontsize=ss.TYPE_PT["normal"]["text"], pad=2)

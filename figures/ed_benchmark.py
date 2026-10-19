@@ -72,7 +72,7 @@ def panel_a(path):
     """NMI ranking across the twelve methods."""
     rows = ranking("NMI")
     fig, ax = ss.panel(84, 58)
-    fig.subplots_adjust(left=0.30, right=0.97, top=0.97, bottom=0.13)
+    fig.subplots_adjust(left=0.24, right=0.97, top=0.97, bottom=0.13)
     rows = rows[::-1]
     for i, (name, val, _) in enumerate(rows):
         ax.barh(i, val, height=0.74,
@@ -116,7 +116,7 @@ def panel_c(path):
     rows = seed_table()
     fig, ax = ss.panel(84, 52)
     # left margin equal to panel a's, so the two y-axes sit on one vertical
-    fig.subplots_adjust(left=0.30, right=0.86, top=0.96, bottom=0.16)
+    fig.subplots_adjust(left=0.16, right=0.86, top=0.96, bottom=0.16)
     x = range(len(rows))
     for key, colour, name in (("nmi", "#5AA9D6", "NMI"),
                               ("ari", ss.METHOD_COLORS["spSheaf"], "ARI")):
