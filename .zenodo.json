@@ -1,6 +1,6 @@
 {
   "title": "spSheaf: sheaf-theoretic spatial domain inference from raw molecules without cell segmentation",
-  "description": "Source code, experiment scripts, figure pipeline and tracked result tables (reported/) for the spSheaf manuscript. spSheaf infers spatial domains from molecule-level spatial transcriptomics without cell segmentation: kernel-density expression fibers on a grid, local principal-component stalks, SVD restriction maps and the resulting edge disagreement, which attenuates transitions between expression programs during clustering. Version 0.2.0 is the version of the Nature Methods submission; every number in the manuscript is reproducible from reported/ and the commands listed there.",
+  "description": "Source code, experiment scripts, figure pipeline and tracked result tables (reported/) for the spSheaf manuscript. spSheaf infers spatial domains from molecule-level spatial transcriptomics without cell segmentation: kernel-density expression fibers on a grid, local principal-component stalks, SVD restriction maps and the resulting edge disagreement, which attenuates transitions between expression programs during clustering. Version 0.2.0 is the version of the code and results described in the accompanying manuscript; every number in it is reproducible from reported/ and the commands listed there.",
   "creators": [
     {
       "name": "Paluzo-Hidalgo, Eduardo",

@@ -5,7 +5,7 @@ segmentation. spSheaf places kernel-smoothed expression fibers on a grid,
 gives each vertex a local principal-subspace stalk, scores every edge by its
 *sheaf disagreement* — the residual mismatch of neighbouring local coordinates
 after the stalks are aligned — and attenuates those transitions during
-clustering. Paluzo-Hidalgo, Maehara & Imoto, Nature Methods (submitted).
+clustering. Paluzo-Hidalgo, Maehara & Imoto (2026), manuscript in preparation for publication.
 
 ![The spSheaf construction on a 530 × 400 µm window of a MERFISH hypothalamus section](docs/assets/spsheaf_method.gif)
 
