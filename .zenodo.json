@@ -1,0 +1,48 @@
+{
+  "title": "spSheaf: sheaf-theoretic spatial domain inference from raw molecules without cell segmentation",
+  "description": "Source code, experiment scripts, figure pipeline and tracked result tables (reported/) for the spSheaf manuscript. spSheaf infers spatial domains from molecule-level spatial transcriptomics without cell segmentation: kernel-density expression fibers on a grid, local principal-component stalks, SVD restriction maps and the resulting edge disagreement, which attenuates transitions between expression programs during clustering. Version 0.2.0 is the version of the Nature Methods submission; every number in the manuscript is reproducible from reported/ and the commands listed there.",
+  "creators": [
+    {
+      "name": "Paluzo-Hidalgo, Eduardo",
+      "affiliation": "Universidad de Sevilla; University of Tokyo",
+      "orcid": "0000-0002-4280-5945"
+    },
+    {
+      "name": "Maehara, Kazumitsu",
+      "affiliation": "Kyushu University",
+      "orcid": "0000-0002-2933-5176"
+    },
+    {
+      "name": "Imoto, Yusuke",
+      "affiliation": "Kyoto University",
+      "orcid": "0000-0003-2574-4471"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "spatial transcriptomics",
+    "spatial domain inference",
+    "segmentation-free",
+    "cellular sheaves",
+    "MERFISH",
+    "osmFISH",
+    "topological data analysis"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/EduPH/spSheaf",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "https://pypi.org/project/spsheaf/",
+      "relation": "isIdenticalTo",
+      "scheme": "url",
+      "resource_type": "software"
+    }
+  ],
+  "version": "0.2.0"
+}
