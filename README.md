@@ -5,7 +5,7 @@ segmentation. spSheaf places kernel-smoothed expression fibers on a grid,
 gives each vertex a local principal-subspace stalk, scores every edge by its
 *sheaf disagreement* — the residual mismatch of neighbouring local coordinates
 after the stalks are aligned — and attenuates those transitions during
-clustering. Paluzo-Hidalgo, Maehara & Imoto (2026), manuscript in preparation for publication.
+clustering. Paluzo-Hidalgo, Maehara & Imoto (2026). Software archived at [doi:10.5281/zenodo.24065558](https://doi.org/10.5281/zenodo.24065558).
 
 ![The spSheaf construction on a 530 × 400 µm window of a MERFISH hypothalamus section](docs/assets/spsheaf_method.gif)
 
@@ -38,7 +38,7 @@ pip install spsheaf matplotlib
 python examples/quickstart.py        # writes examples/quickstart_domains.png; ARI 0.77 against the six layers
 ```
 
-![quickstart](examples/quickstart_domains.png)
+![quickstart](https://raw.githubusercontent.com/EduPH/spSheaf/main/examples/quickstart_domains.png)
 
 `examples/tutorial.ipynb` is the same section step by step, with every
 intermediate drawn (fibers, stalks, the disagreement field), what each
