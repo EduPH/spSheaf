@@ -79,6 +79,12 @@ MANIFEST: list[tuple[str, str, str]] = [
     ("merfish/graph_k.csv", "merfish/graph_k.csv",
      "Not in the paper (private notes, experiments_not_in_paper.md): k_graph = 4, 6, 8 on the five slices over three seeds; "
      "the square lattice's tie-break does not matter (`make merfish-graph-k`)"),
+    ("osmfish/output_osmFISH_transfer/osmfish_metrics.csv", "osmfish/osmfish_metrics_transfer.csv",
+     "Extended Data Table 1, osmFISH row: the MERFISH development configuration carried over unchanged "
+     "(h = 385 px, sigma_s = 923 px, d = 6, alpha_s = 0.5, local reference; `_staging/run_osmfish_transfer.sh`)"),
+    ("merfish/stalk_angles_summary.csv", "merfish/stalk_angles_summary.csv",
+     "Methods 4.5: principal angles between adjacent stalks and the distance of the aligning rotation from the identity, "
+     "five slices at the reference configuration, with a random-neighbourhood null (`make merfish-stalk-angles`)"),
     ("merfish/k_split_celltypes.csv", "merfish/k_split_celltypes.csv",
      "Fig. 4e: the Moffitt neuronal clusters in the two BST halves at k = 9, per "
      "slice and cluster (counts, odds ratio, Fisher q); `make merfish-k-split`"),
@@ -99,7 +105,7 @@ MANIFEST: list[tuple[str, str, str]] = [
      "ED Table 1, osmFISH transferred row"),
     ("osmfish/osmfish_sweep.csv",
      "osmfish/output_osmFISH_boundary/osmfish_sweep.csv",
-     "Table 1, osmFISH row, and ED Fig. 2 row 1 (the 108+24 grid)"),
+     "Table 1, osmFISH row, and ED Fig. 3 row 1 (the 108+24 grid)"),
     ("osmfish/osmfish_metrics_tissue_reference.csv",
      "osmfish/tissue_reference/osmfish_metrics.csv",
      "osmFISH at the local-reference scales with the reference switched to tissue (0.588; not in the manuscript -- Table 1's osmFISH value is the tissue-reference argmax in osmfish_sweep.csv)"),
@@ -108,11 +114,11 @@ MANIFEST: list[tuple[str, str, str]] = [
      "ED Table 1, Allen transferred row (one row per k-means seed)"),
     ("spacetx/MERFISH_Allen_Prototype_sweep.csv",
      "spacetx/MERFISH_Allen_Prototype/sweep.csv",
-     "Table 1, Allen row, and ED Fig. 2 row 2 (the 162 grid)"),
+     "Table 1, Allen row, and ED Fig. 3 row 2 (the 162 grid)"),
     ("spacetx/BARISTASeq_metrics.csv", "spacetx/BARISTASeq/metrics.csv",
      "ED Table 1, BaristaSeq transferred row"),
     ("spacetx/BARISTASeq_sweep.csv", "spacetx/BARISTASeq/sweep.csv",
-     "Table 1, BaristaSeq row, and ED Fig. 2 row 3 (the 162 grid)"),
+     "Table 1, BaristaSeq row, and ED Fig. 3 row 3 (the 162 grid)"),
     ("spacetx/sheaf_ablation_*.csv", "spacetx/sheaf_ablation_*.csv",
      "Supplementary Fig. 3: the ten-arm edge-score ablation on each SpaceTx "
      "section at its selected configuration (`make spacetx-ablation`; tissue "
@@ -206,6 +212,16 @@ MANIFEST: list[tuple[str, str, str]] = [
      "ED Fig. 6: radial position against gene density"),
     ("takei/dna_summary.csv", "takei/output_takei_feat_full1/summary.csv",
      "ED Fig. 6: the run summary"),
+    ("takei/output_takei_feat_full2/certification_per_nucleus.csv", "takei/dna_certification_per_nucleus_rep2.csv",
+     "ED Fig. 6: per-nucleus certification, replicate 2 (200 nuclei)"),
+    ("takei/output_takei_feat_full2/certification_radial.csv", "takei/dna_certification_radial_rep2.csv",
+     "ED Fig. 6a: the radial profile, replicate 2"),
+    ("takei/output_takei_feat_full2/summary.csv", "takei/dna_summary_rep2.csv",
+     "ED Fig. 6: the run summary, replicate 2"),
+    ("takei/dna_radial_replicates.csv", "takei/dna_radial_replicates.csv",
+     "ED Fig. 6a: per-chromosome mean radial position in both replicates (compare_replicates.py)"),
+    ("takei/dna_replicates_summary.csv", "takei/dna_replicates_summary.csv",
+     "ED Fig. 6a caption: Pearson r = 0.91 between replicates, NMI per replicate, chr19 most interior in both"),
 ]
 
 CAP_BYTES = 4 * 1024 * 1024          # a summary table, not a per-cell dump

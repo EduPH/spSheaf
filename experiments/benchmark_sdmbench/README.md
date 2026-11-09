@@ -41,4 +41,4 @@ the benchmark's internal cell-expression preprocessing, which cannot be
 reproduced from molecules. Our domains score 0.180 against the ground truth's 0.109, so Moran's I and Geary's C are reported for reference and not
 ranked. This is a property of the metric, not of any method.
 
-Feeds Extended Data Fig. 2.
+Feeds Extended Data Fig. 1 (the SDMBench ranking and seed sensitivity).

@@ -43,4 +43,4 @@ metrics table is written.
 
 The top-300 gene filter retains 49.1 % of all molecules.
 
-Feeds Extended Data Fig. 7a (as the placed raster figures/assets/ed_stereoseq.png). Settings as run: h = 50 units (25 µm), σ_s = 120 units (60 µm), d = 6, k_nbrs = 30, α_s = 0.3, tissue coordinate reference (the run predates the local reference).
+Feeds Extended Data Fig. 5a (as the placed raster figures/assets/ed_stereoseq.png). Settings as run: h = 50 units (25 µm), σ_s = 120 units (60 µm), d = 6, k_nbrs = 30, α_s = 0.3, tissue coordinate reference (the run predates the local reference).

@@ -42,7 +42,10 @@ from scipy.spatial import cKDTree
 from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
 
 from spsheaf import fibers, graph, sheaf, clustering
-from plot_nucleus import slices_png
+try:
+    from experiments.takei.plot_nucleus import slices_png
+except ImportError:                      # run as a script from this folder
+    from plot_nucleus import slices_png
 
 
 def build_parser():

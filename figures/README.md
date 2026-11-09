@@ -25,8 +25,8 @@ Numbering is that of the submitted version (`main_spSheaf_nm.tex`; the longer
 | `fig3_osmfish.py` | Fig. 3 | `data/results/osmfish/output_osmFISH_boundary/panels/osmfish.npz` |
 | `fig5_ksplit.py` | Fig. 4 (`fig5.pdf`) | `data/results/merfish/k_split_MERFISH_*.npz`, `reported/merfish/k_split_celltypes.csv` |
 | `ed_benchmark.py` | ED 1 | `data/results/benchmark_sdmbench/output_benchmark/*_ranking.csv`, `output_seed_sensitivity/` |
-| `ed_sensitivity.py` | ED 2 | the three in-sample grids (`reported/` fallback) |
-| `ed_spacetx.py` | ED 3 | SpaceTx panel dumps (`make spacetx-insample-panels`; `spsheaf_k5.*` for the k = 5 column), competitor labels |
+| `ed_sensitivity.py` | ED 3 | the three in-sample grids (`reported/` fallback) |
+| `ed_spacetx.py` | ED 2 | SpaceTx panel dumps (`make spacetx-insample-panels`; `spsheaf_k5.*` for the k = 5 column), competitor labels |
 | `ed_kselection.py` | ED 4 | `reported/synthetic/k_selection_*.csv`, `reported/merfish/k_selection_MERFISH_*.csv` |
 | `ed_scale.py` | ED 5 | `data/results/brain_receptor/output_brain_receptor/*.csv` + `assets/ed_stereoseq.png` |
 | `ed_composites.py` | ED 6, ED 7 | Takei results (`ed_ifheat_panels.py`, `ed_nucleus_panels.py`) + `assets/dna_*.png` |

@@ -1,7 +1,7 @@
 .PHONY: help install install-pinned install-benchmark install-figures requirements test \
         merfish merfish-seeds merfish-section-all merfish-loo-cv local-all reference-check \
         cache boundary-eval method-validation sheaf-ablation k-sensitivity revision \
-        merfish-reference-field k-selection merfish-k-selection merfish-k-split merfish-graph-k \
+        merfish-reference-field k-selection merfish-k-selection merfish-k-split merfish-graph-k merfish-stalk-angles \
         figure-kselection spacetx-ablation matched-selection-union \
         osmfish osmfish-seeds osmfish-all osmfish-insample osmfish-insample-tissue \
         osmfish-diagnose osmfish-rule \
@@ -163,6 +163,9 @@ merfish-k-selection: ## the same k procedure on a real annotated section (~45 mi
 
 merfish-graph-k:    ## k_graph = 4, 6, 8 on the five slices: does the square lattice's tie-break matter? (~30 min)
 	python -m experiments.merfish.graph_k --seeds 3
+
+merfish-stalk-angles:    ## principal angles between adjacent stalks, from the slice cache (~2 min)
+	python -m experiments.merfish.stalk_angles
 
 merfish-k-split:    ## which annotated domain divides at k = 9, 10: runs on the five slices, then the division record
 	for s in 0.04 0.09 0.14 0.19 0.24; do python -m experiments.merfish.k_split --slice MERFISH_$$s.h5ad; done

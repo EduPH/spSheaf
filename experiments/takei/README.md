@@ -35,7 +35,13 @@ chr1 and chr2 the most peripheral (0.637, 0.611).
 > The r = 0.91 needs the full sample. At 22 nuclei the same correlation was
 > 0.37 and not significant.
 
-Feeds Extended Data Fig. 8.
+Re-run 5 Nov 2026 from a fresh download (`_staging/run_takei_dna.sh`): NMI
+0.567 / 0.566, purity 0.29, Pearson r = 0.910 (p = 2.7 × 10⁻⁸), Spearman
+ρ = 0.85, chr19 most interior in both; replicate-1 radial profile identical
+to the tracked one. `python -m experiments.takei.compare_replicates` writes
+`reported/takei/dna_radial_replicates.csv` and `dna_replicates_summary.csv`.
+
+Feeds Extended Data Fig. 6.
 
 ---
 
@@ -73,4 +79,4 @@ Pooling all nuclei gives 5 zone archetypes: constitutive heterochromatin,
 repressive, baseline interior, lamina-associated, and active / nuclear
 speckle.
 
-Feeds Extended Data Fig. 9 (`figures/ed_ifheat_panels.py` draws it from `certification_zone_table.csv` and the archetype tables; `make_zone_heatmaps.py` writes those).
+Feeds Extended Data Fig. 7 (`figures/ed_ifheat_panels.py` draws it from `certification_zone_table.csv` and the archetype tables; `make_zone_heatmaps.py` writes those).
